@@ -10,7 +10,6 @@ import {
   galleryCatering,
   galleryPizza,
   type GalleryCategory,
-  uniqueByShortcode,
 } from '@/lib/gallery-images';
 
 type GalerieSectionProps = {
@@ -21,9 +20,13 @@ type GalerieSectionProps = {
 function CategoryTabs({
   active,
   onChange,
+  pizzaCount,
+  cateringCount,
 }: {
   active: GalleryCategory;
   onChange: (category: GalleryCategory) => void;
+  pizzaCount: number;
+  cateringCount: number;
 }) {
   return (
     <div className="mb-8 flex flex-wrap justify-center gap-2">
@@ -40,7 +43,7 @@ function CategoryTabs({
         >
           {cat.label}
           <span className="ml-2 text-xs font-normal opacity-70">
-            ({cat.id === 'pizza' ? uniqueByShortcode(galleryPizza).length : uniqueByShortcode(galleryCatering).length})
+            ({cat.id === 'pizza' ? pizzaCount : cateringCount})
           </span>
         </button>
       ))}
@@ -49,9 +52,9 @@ function CategoryTabs({
 }
 
 export default function GalerieSection({ compact = false, hideHeader = false }: GalerieSectionProps) {
-  const [active, setActive] = useState<GalleryCategory>('pizza');
-  const pizzaPhotos = uniqueByShortcode(galleryPizza);
-  const cateringPhotos = uniqueByShortcode(galleryCatering);
+  const [active, setActive] = useState<GalleryCategory>('catering');
+  const pizzaPhotos = galleryPizza;
+  const cateringPhotos = galleryCatering;
 
   if (compact) {
     return (
@@ -95,7 +98,12 @@ export default function GalerieSection({ compact = false, hideHeader = false }: 
           </div>
         )}
 
-        <CategoryTabs active={active} onChange={setActive} />
+        <CategoryTabs
+          active={active}
+          onChange={setActive}
+          pizzaCount={pizzaPhotos.length}
+          cateringCount={cateringPhotos.length}
+        />
 
         <div className="mb-6 text-center">
           <h3 className="font-serif text-2xl font-bold text-slate-deep">{activeCategory.label}</h3>
@@ -105,6 +113,7 @@ export default function GalerieSection({ compact = false, hideHeader = false }: 
         <ExpandableGalleryGrid
           key={active}
           images={activeImages}
+          initialRows={2}
           priorityCount={8}
           fadeBackgroundClass="from-ivory"
         />

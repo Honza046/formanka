@@ -285,7 +285,7 @@ export const cateringVenueOptions = [
   'Restaurace (do 100 osob)',
   'Letní zahrádka (40+ osob)',
   'Restaurace i zahrádka',
-  'Zatím nevím',
+  'Máme vlastní',
 ] as const;
 
 export const cateringMenuOptions = [

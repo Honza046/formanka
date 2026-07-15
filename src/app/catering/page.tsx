@@ -21,34 +21,49 @@ export default function CateringPage() {
       />
 
       <section className="px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
-        <div className="mx-auto max-w-5xl">
+        <div className="mx-auto max-w-6xl">
           <div className="mb-8 grid gap-3 sm:mb-10 sm:grid-cols-2 sm:gap-4">
             {services.slice(0, 2).map((service) => (
               <div
                 key={service}
-                className="rounded-2xl border border-slate-deep/5 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6"
+                className="rounded-2xl border border-navy/5 bg-white p-5 shadow-sm sm:rounded-3xl sm:p-6"
               >
-                <p className="text-sm font-medium text-slate-deep sm:text-base">{service}</p>
+                <p className="text-sm font-medium text-navy sm:text-base">{service}</p>
               </div>
             ))}
           </div>
 
-          <h2 className="mb-4 font-serif text-xl font-bold text-slate-deep sm:mb-6 sm:text-2xl">
+          <h2 className="mb-4 font-serif text-xl font-bold text-navy sm:mb-6 sm:text-2xl">
             Co u nás pořádáme
           </h2>
-          <ul className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-            {cateringEvents.map((event) => (
-              <li
-                key={event.title}
-                className="rounded-2xl border border-slate-deep/5 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6"
-              >
-                <h3 className="font-serif text-base font-bold text-slate-deep sm:text-lg">
-                  {event.title}
-                </h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-slate-deep/60">{event.description}</p>
-              </li>
-            ))}
-          </ul>
+          <div className="w-fit mx-auto">
+            <ul className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+              {cateringEvents.slice(0, 3).map((event) => (
+                <li
+                  key={event.title}
+                  className="flex h-full flex-col rounded-2xl border border-navy/5 bg-white p-5 shadow-sm sm:rounded-3xl sm:p-6"
+                >
+                  <h3 className="font-serif text-base font-bold text-navy sm:text-lg">
+                    {event.title}
+                  </h3>
+                  <p className="mt-2 flex-1 text-sm leading-relaxed text-navy/60">{event.description}</p>
+                </li>
+              ))}
+            </ul>
+            <ul className="mt-4 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-2 lg:w-fit lg:mx-auto">
+              {cateringEvents.slice(3, 5).map((event) => (
+                <li
+                  key={event.title}
+                  className="flex h-full flex-col rounded-2xl border border-navy/5 bg-white p-5 shadow-sm sm:rounded-3xl sm:p-6"
+                >
+                  <h3 className="font-serif text-base font-bold text-navy sm:text-lg">
+                    {event.title}
+                  </h3>
+                  <p className="mt-2 flex-1 text-sm leading-relaxed text-navy/60">{event.description}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
 
           <div className="mt-8 rounded-2xl bg-slate-deep p-5 text-ivory sm:mt-10 sm:rounded-3xl sm:p-8 lg:p-10">
             <h2 className="font-serif text-xl font-bold sm:text-2xl">{offerIntro.title}</h2>

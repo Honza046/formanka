@@ -53,14 +53,14 @@ export default function ExpandableGalleryGrid({
             {(expanded ? alignedImages : alignedImages.slice(0, collapsedVisible)).map((image, i) => (
               <div
                 key={image.file}
-                className="relative aspect-[4/5] overflow-hidden rounded-3xl bg-ivory ring-1 ring-slate-deep/5"
+                className="relative aspect-[4/5] overflow-hidden rounded-3xl bg-navy/5 ring-1 ring-slate-deep/5"
               >
                 <Image
                   src={image.file}
                   alt={galleryAlt(image.alt)}
                   fill
                   sizes="(max-width: 1024px) 50vw, 25vw"
-                  className="rounded-3xl object-contain"
+                  className="object-cover"
                   priority={i < priorityCount}
                 />
               </div>
