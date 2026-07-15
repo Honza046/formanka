@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight, MapPin } from 'lucide-react';
+import MapEmbed from '@/components/MapEmbed';
 import { HOME_SURFACE_RADIUS } from '@/lib/home-layout';
 import { site } from '@/lib/data';
 
@@ -16,15 +17,10 @@ export default function HomeLocationSection() {
         </div>
 
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-stretch">
-          <div className={`overflow-hidden ${HOME_SURFACE_RADIUS} border border-navy/5 shadow-sm`}>
-            <iframe
-              title="Mapa — Na Formance Žeravice"
-              src={site.mapsEmbedUrl}
-              className="h-[280px] w-full sm:h-[360px] lg:h-full lg:min-h-[320px]"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              allowFullScreen
-            />
+          <div
+            className={`relative min-h-[280px] overflow-hidden sm:min-h-[360px] lg:min-h-full lg:h-full ${HOME_SURFACE_RADIUS} border border-navy/5 shadow-sm`}
+          >
+            <MapEmbed fill />
           </div>
 
           <div className={`flex flex-col justify-between ${HOME_SURFACE_RADIUS} border border-navy/5 bg-cream p-6 sm:p-8`}>

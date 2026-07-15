@@ -20,6 +20,10 @@ export const site = {
     note: 'Žeravice u Kyjova',
     country: 'Česká republika',
   },
+  coordinates: {
+    lat: 49.03795,
+    lng: 17.10686,
+  },
   mapsUrl: 'https://maps.google.com/?q=Na+Formance+Žeravice+36,+696+47+Žeravice',
   mapsEmbedUrl:
     'https://maps.google.com/maps?q=Na+Formance+Žeravice+36,+696+47+Žeravice&hl=cs&z=16&output=embed',

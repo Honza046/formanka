@@ -99,9 +99,16 @@ function PickupTimePicker({
   );
 }
 
+function newLineId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
 function newCartLine(pizzaName: string): CartLine {
   return {
-    id: crypto.randomUUID(),
+    id: newLineId(),
     pizzaName,
     quantity: 1,
     extras: [],
@@ -123,6 +130,8 @@ export default function PizzaOrderForm() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState<{ id: string; pickupTime: string } | null>(null);
   const [slots, setSlots] = useState(() => getPickupSlots());
+  const cartRef = useRef<HTMLDivElement>(null);
+  const checkoutRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const refresh = () => setSlots(getPickupSlots());
@@ -144,6 +153,9 @@ export default function PizzaOrderForm() {
 
   const addToCart = (pizzaName: string) => {
     setCart((prev) => [...prev, newCartLine(pizzaName)]);
+    requestAnimationFrame(() => {
+      cartRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
   };
 
   const updateLine = (id: string, updates: Partial<CartLine>) => {
@@ -283,7 +295,8 @@ export default function PizzaOrderForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <>
+    <form onSubmit={handleSubmit} className={`space-y-8 ${cart.length > 0 ? 'pb-28' : ''}`}>
       {remaining !== null && (
         <div className="rounded-2xl bg-forest/10 px-4 py-3 text-center text-sm text-forest">
           Dnes zbývá přibližně <strong>{remaining}</strong> pizz k objednání
@@ -292,15 +305,15 @@ export default function PizzaOrderForm() {
 
       <div>
         <h3 className="mb-4 font-serif text-xl font-bold text-slate-deep">Vyberte pizzy</h3>
-        <ul className="grid gap-3 sm:grid-cols-2">
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {pizzaMenu.map((pizza) => {
             const count = cart.filter((line) => line.pizzaName === pizza.name).length;
             return (
               <li
                 key={pizza.name}
-                className="flex items-center justify-between rounded-2xl border border-slate-deep/5 bg-white p-4"
+                className="flex flex-col gap-3 rounded-2xl border border-slate-deep/5 bg-white p-4"
               >
-                <div className="min-w-0 pr-3">
+                <div className="min-w-0">
                   <p className="font-medium text-slate-deep">{pizza.name}</p>
                   {pizza.description && (
                     <p className="text-xs text-slate-deep/50">{pizza.description}</p>
@@ -310,7 +323,7 @@ export default function PizzaOrderForm() {
                 <button
                   type="button"
                   onClick={() => addToCart(pizza.name)}
-                  className="flex shrink-0 items-center gap-1.5 rounded-xl bg-forest/10 px-3 py-1.5 text-sm font-semibold text-forest hover:bg-forest/20"
+                  className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-forest/10 px-3 py-2 text-sm font-semibold text-forest transition-colors hover:bg-forest hover:text-ivory"
                 >
                   <Plus className="h-4 w-4" />
                   Přidat
@@ -327,7 +340,7 @@ export default function PizzaOrderForm() {
       </div>
 
       {cart.length > 0 && (
-        <div>
+        <div ref={cartRef}>
           <h3 className="mb-4 font-serif text-xl font-bold text-slate-deep">Vaše pizzy</h3>
           <ul className="space-y-3">
             {cart.map((line) => (
@@ -424,7 +437,7 @@ export default function PizzaOrderForm() {
 
       {totalPizzas > 0 && (
         <>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div ref={checkoutRef} className="grid gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="order-name" className="mb-1.5 block text-sm font-medium">
                 Jméno <span className="text-terracotta">*</span>
@@ -558,5 +571,30 @@ export default function PizzaOrderForm() {
         </>
       )}
     </form>
+
+    {cart.length > 0 && (
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-deep/10 bg-white/95 px-4 py-3 shadow-[0_-4px_24px_rgba(40,48,64,0.1)] backdrop-blur-sm">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
+          <div>
+            <p className="font-serif font-bold text-slate-deep">
+              {totalPizzas}{' '}
+              {totalPizzas === 1 ? 'pizza' : totalPizzas < 5 ? 'pizzy' : 'pizz'} v košíku
+            </p>
+            <p className="text-sm text-slate-deep/60">Celkem {formatPrice(orderTotal)}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() =>
+              checkoutRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }
+            className="inline-flex shrink-0 items-center gap-2 rounded-2xl bg-forest px-5 py-2.5 text-sm font-semibold text-ivory transition-colors hover:bg-forest-light"
+          >
+            <ShoppingBag className="h-4 w-4" />
+            Pokračovat
+          </button>
+        </div>
+      </div>
+    )}
+    </>
   );
 }

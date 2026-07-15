@@ -4,7 +4,6 @@ import HomePizzaTeaser from '@/components/HomePizzaTeaser';
 import GalerieSection from '@/components/GalerieSection';
 import HomeLocationSection from '@/components/HomeLocationSection';
 import GoogleReviewsSection from '@/components/GoogleReviewsSection';
-import CtaBanner from '@/components/CtaBanner';
 
 export default function HomePage() {
   return (
@@ -15,7 +14,6 @@ export default function HomePage() {
       <GalerieSection compact />
       <HomeLocationSection />
       <GoogleReviewsSection />
-      <CtaBanner />
     </main>
   );
 }

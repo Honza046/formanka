@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Clock, Facebook, Instagram, MapPin } from 'lucide-react';
 import ContactForm from '@/components/ContactForm';
+import MapEmbed from '@/components/MapEmbed';
 import PageHero from '@/components/PageHero';
 import { openingHours, site } from '@/lib/data';
 
@@ -94,14 +95,7 @@ export default function KontaktPage() {
 
       <section className="px-4 pb-14 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl overflow-hidden rounded-3xl border border-slate-deep/5 shadow-sm">
-          <iframe
-            title="Mapa — Na Formance Žeravice"
-            src={site.mapsEmbedUrl}
-            className="h-[360px] w-full sm:h-[420px]"
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            allowFullScreen
-          />
+          <MapEmbed minHeightClass="min-h-[360px] sm:min-h-[420px]" />
         </div>
       </section>
 
