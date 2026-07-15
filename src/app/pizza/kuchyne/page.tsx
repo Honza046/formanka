@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#14532d',
+  themeColor: '#283040',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -22,7 +22,7 @@ export const viewport: Viewport = {
 
 export default function KitchenPage() {
   return (
-    <main className="min-h-screen bg-slate-deep">
+    <main className="min-h-screen bg-ivory">
       <KitchenDashboard />
     </main>
   );

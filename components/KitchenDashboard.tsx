@@ -3,8 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Bell,
-  Check,
-  ChefHat,
   Clock,
   LogOut,
   Minus,
@@ -12,10 +10,10 @@ import {
   Phone,
   Plus,
   RefreshCw,
-  X,
 } from 'lucide-react';
+import SiteLogo from '@/components/SiteLogo';
 import type { OrderStatus, PizzaOrder } from '@/lib/pizza-orders/types';
-import { paymentMethodLabels, pizzaCount } from '@/lib/pizza-orders/types';
+import { paymentMethodLabels } from '@/lib/pizza-orders/types';
 import { formatPrice } from '@/lib/data';
 import { lineItemTotal } from '@/lib/pizza-pricing';
 
@@ -25,6 +23,14 @@ const statusLabels: Record<OrderStatus, string> = {
   ready: 'K vyzvednutí',
   completed: 'Vyzvednuto',
   rejected: 'Zamítnuto',
+};
+
+const statusStyles: Record<OrderStatus, string> = {
+  pending: 'bg-gold/15 text-navy ring-1 ring-gold/40',
+  confirmed: 'bg-navy/10 text-navy',
+  ready: 'bg-gold text-navy',
+  completed: 'bg-cream text-navy/60',
+  rejected: 'bg-terracotta/10 text-terracotta',
 };
 
 function sortOrders(orders: PizzaOrder[]): PizzaOrder[] {
@@ -83,12 +89,13 @@ export default function KitchenDashboard() {
 
   const fetchData = useCallback(async () => {
     try {
+      const fetchOpts: RequestInit = { credentials: 'same-origin' };
       const [ordersRes, capRes] = await Promise.all([
-        fetch('/api/pizza/orders/manage'),
-        fetch('/api/pizza/capacity'),
+        fetch('/api/pizza/orders/manage', fetchOpts),
+        fetch('/api/pizza/capacity', fetchOpts),
       ]);
 
-      if (ordersRes.status === 401) {
+      if (ordersRes.status === 401 || capRes.status === 401) {
         setAuthenticated(false);
         return;
       }
@@ -99,7 +106,6 @@ export default function KitchenDashboard() {
       const capData = await capRes.json();
       const newOrders: PizzaOrder[] = ordersData.orders ?? [];
 
-      // Zvuk při nové objednávce
       const pendingIds = new Set(
         newOrders.filter((o) => o.status === 'pending').map((o) => o.id),
       );
@@ -132,17 +138,33 @@ export default function KitchenDashboard() {
   const login = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
-    const res = await fetch('/api/pizza/kitchen/auth', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pin }),
-    });
-    if (!res.ok) {
-      setAuthError('Neplatný PIN');
-      return;
+    setLoading(true);
+    try {
+      const res = await fetch('/api/pizza/kitchen/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ pin: pin.trim() }),
+      });
+      if (!res.ok) {
+        setAuthError('Neplatný PIN');
+        return;
+      }
+      await res.json();
+
+      const check = await fetch('/api/pizza/orders/manage', { credentials: 'same-origin' });
+      if (check.status === 401) {
+        setAuthError('PIN přijat, ale session nefunguje. Obnovte stránku a zkuste znovu.');
+        return;
+      }
+
+      setAuthenticated(true);
+      await fetchData();
+    } catch {
+      setAuthError('Připojení selhalo. Zkontrolujte internet a zkuste znovu.');
+    } finally {
+      setLoading(false);
     }
-    setAuthenticated(true);
-    fetchData();
   };
 
   const logout = async () => {
@@ -191,31 +213,44 @@ export default function KitchenDashboard() {
 
   if (!authenticated) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-6">
-        <div className="w-full max-w-sm rounded-3xl bg-white p-8 shadow-xl">
-          <div className="mb-8 text-center">
-            <ChefHat className="mx-auto h-14 w-14 text-forest" />
-            <h1 className="mt-4 font-serif text-2xl font-bold text-slate-deep">Kuchyně</h1>
-            <p className="mt-1 text-sm text-slate-deep/60">Na Formance — Žeravice</p>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-ivory px-4 py-10">
+        <div className="w-full max-w-sm">
+          <div className="rounded-3xl border border-navy/5 bg-white p-8 shadow-sm">
+            <div className="mb-8 flex flex-col items-center text-center">
+              <SiteLogo size="lg" />
+              <p className="mt-4 text-xs font-semibold uppercase tracking-widest text-gold">
+                Kuchyně
+              </p>
+              <h1 className="mt-1 font-serif text-2xl font-bold text-navy">Na Formance</h1>
+              <p className="mt-1 text-sm text-navy/55">Žeravice</p>
+            </div>
+            <form onSubmit={login} className="space-y-4">
+              <input
+                type="password"
+                inputMode="numeric"
+                autoComplete="off"
+                placeholder="PIN"
+                value={pin}
+                onChange={(e) => setPin(e.target.value)}
+                className="w-full rounded-2xl border border-navy/10 bg-cream px-4 py-4 text-center font-serif text-3xl tracking-[0.3em] text-navy outline-none transition focus:border-gold focus:ring-2 focus:ring-gold/25"
+              />
+              {authError && (
+                <p className="rounded-xl bg-terracotta/10 px-3 py-2 text-center text-sm text-terracotta">
+                  {authError}
+                </p>
+              )}
+              <button
+                type="submit"
+                disabled={loading || pin.trim().length === 0}
+                className="w-full rounded-2xl bg-gold py-4 text-base font-semibold text-navy transition hover:bg-gold-light active:scale-[0.98] disabled:opacity-50"
+              >
+                {loading ? 'Přihlašuji…' : 'Vstoupit'}
+              </button>
+            </form>
           </div>
-          <form onSubmit={login} className="space-y-4">
-            <input
-              type="password"
-              inputMode="numeric"
-              autoComplete="off"
-              placeholder="PIN"
-              value={pin}
-              onChange={(e) => setPin(e.target.value)}
-              className="w-full rounded-2xl border-2 border-slate-deep/10 bg-ivory px-4 py-4 text-center text-3xl tracking-[0.3em] outline-none focus:border-forest"
-            />
-            {authError && <p className="text-center text-sm text-red-600">{authError}</p>}
-            <button
-              type="submit"
-              className="w-full rounded-2xl bg-forest py-4 text-base font-bold text-ivory active:scale-[0.98]"
-            >
-              Vstoupit
-            </button>
-          </form>
+          <p className="mt-6 text-center text-xs text-navy/40">
+            Přidejte si stránku na plochu telefonu pro rychlý přístup.
+          </p>
         </div>
       </div>
     );
@@ -226,131 +261,143 @@ export default function KitchenDashboard() {
   );
   const doneOrders = orders.filter((o) => ['completed', 'rejected'].includes(o.status));
   const pendingCount = orders.filter((o) => o.status === 'pending').length;
+  const capacityPct = maxPizzas > 0 ? Math.round((remaining / maxPizzas) * 100) : 0;
 
   return (
-    <div className="mx-auto min-h-screen max-w-lg pb-8">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-slate-deep px-4 pb-4 pt-6 text-ivory">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-widest text-ivory/50">Kuchyně</p>
-            <h1 className="font-serif text-xl font-bold">Na Formance</h1>
+    <div className="mx-auto min-h-screen max-w-lg bg-ivory pb-8">
+      <header className="sticky top-0 z-10 border-b border-navy/5 bg-ivory/95 px-4 pb-4 pt-4 backdrop-blur-md">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <SiteLogo size="sm" />
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-gold">
+                Kuchyně
+              </p>
+              <h1 className="truncate font-serif text-lg font-bold text-navy">Na Formance</h1>
+            </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex shrink-0 gap-2">
             <button
               type="button"
               onClick={fetchData}
-              className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10"
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-navy/10 bg-white text-navy transition hover:bg-cream"
               aria-label="Obnovit"
             >
-              <RefreshCw className="h-5 w-5" />
+              <RefreshCw className="h-4 w-4" />
             </button>
             <button
               type="button"
               onClick={logout}
-              className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10"
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-navy/10 bg-white text-navy transition hover:bg-cream"
               aria-label="Odhlásit"
             >
-              <LogOut className="h-5 w-5" />
+              <LogOut className="h-4 w-4" />
             </button>
           </div>
         </div>
 
-        {/* Kapacita */}
-        <div className="mt-4 rounded-2xl bg-white/10 p-4">
-          <div className="flex items-center justify-between">
+        <div className="mt-4 rounded-3xl border border-navy/5 bg-white p-4 shadow-sm">
+          <div className="flex items-end justify-between gap-4">
             <div>
-              <p className="text-xs text-ivory/60">Zbývá dnes</p>
-              <p className="text-3xl font-bold">
-                {remaining}
-                <span className="text-base font-normal text-ivory/50"> / {maxPizzas}</span>
+              <p className="text-xs font-medium uppercase tracking-wider text-navy/45">
+                Kapacita dnes
               </p>
+              <p className="mt-1 font-serif text-3xl font-bold text-navy">
+                {remaining}
+                <span className="text-lg font-normal text-navy/40"> / {maxPizzas}</span>
+              </p>
+              <p className="mt-0.5 text-xs text-navy/45">pizz zbývá</p>
             </div>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => updateMaxPizzas(-5)}
-                className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-lg font-bold"
+                className="flex h-11 w-11 items-center justify-center rounded-xl border border-navy/10 bg-cream text-navy transition hover:bg-gold/15"
               >
                 <Minus className="h-5 w-5" />
               </button>
               <button
                 type="button"
                 onClick={() => updateMaxPizzas(5)}
-                className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-lg font-bold"
+                className="flex h-11 w-11 items-center justify-center rounded-xl border border-navy/10 bg-cream text-navy transition hover:bg-gold/15"
               >
                 <Plus className="h-5 w-5" />
               </button>
             </div>
           </div>
+
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-cream">
+            <div
+              className="h-full rounded-full bg-gold transition-all"
+              style={{ width: `${capacityPct}%` }}
+            />
+          </div>
+
           <button
             type="button"
             onClick={toggleAccepting}
-            className={`mt-3 w-full rounded-xl py-3 text-sm font-bold ${
-              accepting ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+            className={`mt-4 w-full rounded-2xl py-3 text-sm font-semibold transition active:scale-[0.98] ${
+              accepting
+                ? 'bg-navy text-ivory hover:bg-navy-light'
+                : 'bg-terracotta/15 text-terracotta ring-1 ring-terracotta/30'
             }`}
           >
-            {accepting ? '✓ Přijímáme objednávky' : '✕ Objednávky pozastaveny'}
+            {accepting ? 'Přijímáme objednávky' : 'Objednávky pozastaveny'}
           </button>
         </div>
 
         {pendingCount > 0 && (
-          <div className="mt-3 flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-white">
-            <Bell className="h-4 w-4" />
-            {pendingCount} {pendingCount === 1 ? 'nová objednávka' : 'nové objednávky'}
+          <div className="mt-3 flex items-center gap-2 rounded-2xl bg-gold px-4 py-2.5 text-sm font-semibold text-navy shadow-sm">
+            <Bell className="h-4 w-4 shrink-0" />
+            {pendingCount}{' '}
+            {pendingCount === 1 ? 'nová objednávka' : pendingCount < 5 ? 'nové objednávky' : 'nových objednávek'}
           </div>
         )}
       </header>
 
       {toast && (
-        <div className="mx-4 mt-3 rounded-xl bg-red-500 px-4 py-3 text-center text-sm font-medium text-white">
+        <div className="mx-4 mt-3 rounded-2xl bg-terracotta/10 px-4 py-3 text-center text-sm font-medium text-terracotta ring-1 ring-terracotta/20">
           {toast}
         </div>
       )}
 
-      {/* Aktivní objednávky */}
-      <section className="px-4 pt-4">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-ivory/50">
-          Aktivní ({activeOrders.length})
+      <section className="px-4 pt-5">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-navy/45">
+          Aktivní objednávky ({activeOrders.length})
         </h2>
 
         {activeOrders.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-white/10 py-16 text-center text-ivory/40">
-            Žádné aktivní objednávky
-          </p>
+          <div className="rounded-3xl border border-dashed border-navy/10 bg-white px-6 py-14 text-center">
+            <Package className="mx-auto h-10 w-10 text-navy/20" />
+            <p className="mt-3 text-sm text-navy/45">Žádné aktivní objednávky</p>
+          </div>
         ) : (
           <ul className="space-y-3">
             {activeOrders.map((order) => (
               <li
                 key={order.id}
-                className={`rounded-2xl bg-white p-4 shadow-lg ${
-                  order.status === 'pending' ? 'ring-2 ring-amber-400' : ''
+                className={`rounded-3xl border bg-white p-4 shadow-sm ${
+                  order.status === 'pending'
+                    ? 'border-gold/50 ring-2 ring-gold/25'
+                    : 'border-navy/5'
                 }`}
               >
-                <div className="flex items-start justify-between gap-2">
-                  <div>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
                     <span
-                      className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${
-                        order.status === 'pending'
-                          ? 'bg-amber-100 text-amber-800'
-                          : order.status === 'confirmed'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-green-100 text-green-800'
-                      }`}
+                      className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusStyles[order.status]}`}
                     >
                       {statusLabels[order.status]}
                     </span>
-                    <p className="mt-1 font-serif text-xl font-bold text-slate-deep">
-                      #{order.id}
-                    </p>
-                    <p className="font-semibold text-slate-deep">{order.customerName}</p>
-                    <p className="mt-1 text-xs font-medium text-slate-deep/60">
+                    <p className="mt-2 font-serif text-xl font-bold text-navy">#{order.id}</p>
+                    <p className="font-semibold text-navy">{order.customerName}</p>
+                    <p className="mt-0.5 text-xs text-navy/50">
                       {paymentMethodLabels[order.paymentMethod ?? 'on_site']}
                     </p>
                   </div>
-                  <div className="flex items-center gap-1 rounded-xl bg-forest/10 px-3 py-2 text-forest">
-                    <Clock className="h-4 w-4" />
-                    <span className="text-lg font-bold">
+                  <div className="flex shrink-0 items-center gap-1.5 rounded-2xl bg-cream px-3 py-2 text-navy">
+                    <Clock className="h-4 w-4 text-gold" />
+                    <span className="text-lg font-bold tabular-nums">
                       {new Date(order.pickupTime).toLocaleTimeString('cs-CZ', {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -359,18 +406,19 @@ export default function KitchenDashboard() {
                   </div>
                 </div>
 
-                <ul className="mt-3 space-y-2 border-t border-slate-deep/5 pt-3">
+                <ul className="mt-3 space-y-2 border-t border-navy/5 pt-3">
                   {order.items.map((item, index) => (
                     <li key={`${item.pizzaName}-${index}`} className="text-sm">
-                      <span className="font-medium text-slate-deep">
+                      <span className="font-medium text-navy">
                         {item.quantity}× {item.pizzaName}
                       </span>
                       {item.extras && item.extras.length > 0 && (
-                        <p className="mt-0.5 text-xs font-medium text-forest">
-                          + {item.extras.join(', ')}
-                        </p>
+                        <p className="mt-0.5 text-xs font-medium text-gold">+ {item.extras.join(', ')}</p>
                       )}
-                      <p className="mt-0.5 text-xs text-slate-deep/60">
+                      {item.customization?.trim() && (
+                        <p className="mt-0.5 text-xs italic text-navy/55">{item.customization}</p>
+                      )}
+                      <p className="mt-0.5 text-xs text-navy/45">
                         {formatPrice(lineItemTotal(item.pizzaName, item.quantity, item.extras ?? []))}
                       </p>
                     </li>
@@ -378,15 +426,15 @@ export default function KitchenDashboard() {
                 </ul>
 
                 {order.note && (
-                  <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
-                    ⚠ {order.note}
+                  <p className="mt-3 rounded-xl bg-gold/10 px-3 py-2 text-sm text-navy ring-1 ring-gold/20">
+                    {order.note}
                   </p>
                 )}
 
                 <div className="mt-4 grid gap-2">
                   <a
                     href={`tel:${order.phone.replace(/\s/g, '')}`}
-                    className="flex items-center justify-center gap-2 rounded-xl border border-slate-deep/10 py-3 text-sm font-medium text-slate-deep"
+                    className="flex items-center justify-center gap-2 rounded-2xl border border-navy/10 bg-cream py-3 text-sm font-medium text-navy transition hover:bg-gold/10"
                   >
                     <Phone className="h-4 w-4" />
                     {order.phone}
@@ -398,17 +446,17 @@ export default function KitchenDashboard() {
                         type="button"
                         disabled={loading}
                         onClick={() => updateStatus(order.id, 'confirmed')}
-                        className="rounded-xl bg-forest py-4 text-sm font-bold text-ivory active:scale-[0.98] disabled:opacity-50"
+                        className="rounded-2xl bg-navy py-3.5 text-sm font-semibold text-ivory transition active:scale-[0.98] disabled:opacity-50"
                       >
-                        ✓ Potvrdit
+                        Potvrdit
                       </button>
                       <button
                         type="button"
                         disabled={loading}
                         onClick={() => updateStatus(order.id, 'rejected')}
-                        className="rounded-xl border-2 border-red-200 py-4 text-sm font-bold text-red-600 active:scale-[0.98] disabled:opacity-50"
+                        className="rounded-2xl border border-terracotta/30 bg-terracotta/5 py-3.5 text-sm font-semibold text-terracotta transition active:scale-[0.98] disabled:opacity-50"
                       >
-                        ✕ Zamítnout
+                        Zamítnout
                       </button>
                     </div>
                   )}
@@ -417,9 +465,9 @@ export default function KitchenDashboard() {
                       type="button"
                       disabled={loading}
                       onClick={() => updateStatus(order.id, 'ready')}
-                      className="rounded-xl bg-green-600 py-4 text-sm font-bold text-white active:scale-[0.98] disabled:opacity-50"
+                      className="flex items-center justify-center gap-2 rounded-2xl bg-gold py-3.5 text-sm font-semibold text-navy transition active:scale-[0.98] disabled:opacity-50"
                     >
-                      <Package className="mr-1 inline h-4 w-4" />
+                      <Package className="h-4 w-4" />
                       Hotovo — k vyzvednutí
                     </button>
                   )}
@@ -428,9 +476,9 @@ export default function KitchenDashboard() {
                       type="button"
                       disabled={loading}
                       onClick={() => updateStatus(order.id, 'completed')}
-                      className="rounded-xl bg-slate-deep py-4 text-sm font-bold text-ivory active:scale-[0.98] disabled:opacity-50"
+                      className="rounded-2xl border border-navy/15 bg-white py-3.5 text-sm font-semibold text-navy ring-1 ring-navy/10 transition active:scale-[0.98] disabled:opacity-50"
                     >
-                      ✓ Vyzvednuto
+                      Vyzvednuto
                     </button>
                   )}
                 </div>
@@ -440,21 +488,24 @@ export default function KitchenDashboard() {
         )}
       </section>
 
-      {/* Hotové */}
       {doneOrders.length > 0 && (
         <section className="mt-6 px-4">
           <button
             type="button"
             onClick={() => setShowDone(!showDone)}
-            className="mb-3 text-sm font-semibold text-ivory/50"
+            className="mb-3 text-sm font-semibold text-navy/45"
           >
-            {showDone ? '▼' : '▶'} Hotové / zamítnuté ({doneOrders.length})
+            {showDone ? 'Skrýt' : 'Zobrazit'} hotové ({doneOrders.length})
           </button>
           {showDone && (
-            <ul className="space-y-2 opacity-60">
+            <ul className="space-y-2">
               {doneOrders.map((order) => (
-                <li key={order.id} className="rounded-xl bg-white/10 px-4 py-3 text-sm text-ivory">
-                  #{order.id} — {order.customerName} — {statusLabels[order.status]}
+                <li
+                  key={order.id}
+                  className="rounded-2xl border border-navy/5 bg-white/80 px-4 py-3 text-sm text-navy/60"
+                >
+                  <span className="font-medium text-navy/80">#{order.id}</span> — {order.customerName}{' '}
+                  · {statusLabels[order.status]}
                 </li>
               ))}
             </ul>

@@ -12,9 +12,9 @@ function sign(payload: string): string {
   return createHmac('sha256', secret()).update(payload).digest('hex');
 }
 
-export function verifyKitchenPin(pin: string): boolean {
+export function verifyKitchenPin(pin: unknown): boolean {
   const expected = process.env.KITCHEN_PIN || '1234';
-  return pin === expected;
+  return String(pin ?? '').trim() === expected;
 }
 
 export function createKitchenToken(): string {

@@ -156,3 +156,8 @@ export async function getTodayOrders(): Promise<PizzaOrder[]> {
   const date = store.capacity.date;
   return store.orders.filter((order) => order.pickupTime.startsWith(date));
 }
+
+export async function getOrderById(id: string): Promise<PizzaOrder | null> {
+  const store = await ensureStore();
+  return store.orders.find((order) => order.id === id) ?? null;
+}

@@ -28,7 +28,7 @@ const STEPS = [
 ] as const;
 
 const inputClass =
-  'w-full rounded-xl border border-slate-deep/10 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-forest focus:ring-2 focus:ring-forest/20';
+  'w-full rounded-xl border border-slate-deep/10 bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-forest focus:ring-2 focus:ring-forest/20 sm:px-4 sm:py-3 sm:text-base';
 
 type FormData = {
   firstName: string;
@@ -108,7 +108,7 @@ function ChoiceButton({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-2xl border px-4 py-3 text-left text-sm transition-colors ${
+      className={`rounded-xl border px-3 py-2.5 text-left text-sm transition-colors sm:rounded-2xl sm:px-4 sm:py-3 sm:text-base ${
         selected
           ? 'border-forest bg-forest/5 font-semibold text-forest ring-2 ring-forest/20'
           : 'border-slate-deep/10 bg-white text-slate-deep hover:border-slate-deep/20'
@@ -121,17 +121,17 @@ function ChoiceButton({
 
 function StepProgress({ current }: { current: number }) {
   return (
-    <div className="mb-6">
-      <div className="flex items-center justify-between gap-2">
+    <div className="mb-5 sm:mb-6">
+      <div className="flex items-center justify-between gap-1 sm:gap-3">
         {STEPS.map((step, index) => {
           const Icon = step.icon;
           const done = current > step.id;
           const active = current === step.id;
           return (
             <div key={step.id} className="flex flex-1 items-center">
-              <div className="flex flex-col items-center gap-1.5">
+              <div className="flex flex-col items-center gap-1 sm:gap-1.5">
                 <span
-                  className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold transition-colors ${
+                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-colors sm:h-10 sm:w-10 sm:text-sm ${
                     active
                       ? 'bg-forest text-ivory'
                       : done
@@ -139,10 +139,10 @@ function StepProgress({ current }: { current: number }) {
                         : 'bg-slate-deep/10 text-slate-deep/40'
                   }`}
                 >
-                  {done ? '✓' : <Icon className="h-4 w-4" />}
+                  {done ? '✓' : <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
                 </span>
                 <span
-                  className={`text-xs font-medium ${
+                  className={`text-[11px] font-medium sm:text-xs ${
                     active ? 'text-forest' : done ? 'text-slate-deep/70' : 'text-slate-deep/40'
                   }`}
                 >
@@ -151,7 +151,7 @@ function StepProgress({ current }: { current: number }) {
               </div>
               {index < STEPS.length - 1 && (
                 <div
-                  className={`mx-2 mb-5 h-0.5 flex-1 rounded ${
+                  className={`mx-1 mb-5 h-0.5 flex-1 rounded sm:mx-2 sm:mb-6 ${
                     current > step.id ? 'bg-forest/40' : 'bg-slate-deep/10'
                   }`}
                 />
@@ -281,11 +281,13 @@ export default function CateringInquiryForm() {
     <form onSubmit={handleSubmit}>
       <StepProgress current={step} />
 
-      <div className="min-h-[280px]">
+      <div>
         {step === 1 && (
-          <div className="space-y-4">
-            <h3 className="font-serif text-lg font-bold text-slate-deep">Kontaktní údaje</h3>
-            <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-3 sm:space-y-4">
+            <h3 className="font-serif text-lg font-bold text-slate-deep sm:text-xl">
+              Kontaktní údaje
+            </h3>
+            <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
               <div>
                 <label htmlFor="catering-first-name" className="mb-1.5 block text-sm font-medium">
                   Jméno <span className="text-terracotta">*</span>
@@ -311,7 +313,7 @@ export default function CateringInquiryForm() {
                 />
               </div>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
               <div>
                 <label htmlFor="catering-email" className="mb-1.5 block text-sm font-medium">
                   E-mail <span className="text-terracotta">*</span>
@@ -342,13 +344,13 @@ export default function CateringInquiryForm() {
         )}
 
         {step === 2 && (
-          <div className="space-y-5">
-            <h3 className="font-serif text-lg font-bold text-slate-deep">O akci</h3>
+          <div className="space-y-4 sm:space-y-5">
+            <h3 className="font-serif text-lg font-bold text-slate-deep sm:text-xl">O akci</h3>
             <div>
-              <p className="mb-2 text-sm font-medium">
+              <p className="mb-2 text-sm font-medium sm:text-base">
                 Typ akce <span className="text-terracotta">*</span>
               </p>
-              <div className="grid gap-2 sm:grid-cols-2">
+              <div className="grid gap-2 sm:grid-cols-2 sm:gap-3">
                 {cateringEventTypes.map((type) => (
                   <ChoiceButton
                     key={type}
@@ -360,7 +362,7 @@ export default function CateringInquiryForm() {
                 ))}
               </div>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
               <div>
                 <label htmlFor="catering-event-date" className="mb-1.5 block text-sm font-medium">
                   Datum akce
@@ -388,8 +390,8 @@ export default function CateringInquiryForm() {
               </div>
             </div>
             <div>
-              <p className="mb-2 text-sm font-medium">Počet hostů</p>
-              <div className="grid grid-cols-2 gap-2">
+              <p className="mb-2 text-sm font-medium sm:text-base">Počet hostů</p>
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 {guestCountRanges.map((range) => (
                   <ChoiceButton
                     key={range.value}
@@ -402,11 +404,11 @@ export default function CateringInquiryForm() {
               </div>
             </div>
             <div>
-              <p className="mb-2 flex items-center gap-1.5 text-sm font-medium">
-                <MapPin className="h-4 w-4 text-forest/70" />
+              <p className="mb-2 flex items-center gap-1.5 text-sm font-medium sm:text-base">
+                <MapPin className="h-4 w-4 shrink-0 text-forest/70" />
                 Prostor
               </p>
-              <div className="grid gap-2 sm:grid-cols-2">
+              <div className="grid gap-2 sm:grid-cols-2 sm:gap-3">
                 {cateringVenueOptions.map((option) => (
                   <ChoiceButton
                     key={option}
@@ -422,10 +424,12 @@ export default function CateringInquiryForm() {
         )}
 
         {step === 3 && (
-          <div className="space-y-5">
-            <h3 className="font-serif text-lg font-bold text-slate-deep">Menu a požadavky</h3>
+          <div className="space-y-4 sm:space-y-5">
+            <h3 className="font-serif text-lg font-bold text-slate-deep sm:text-xl">
+              Menu a požadavky
+            </h3>
             <div>
-              <p className="mb-2 text-sm font-medium">Co vás zajímá?</p>
+              <p className="mb-2 text-sm font-medium sm:text-base">Co vás zajímá?</p>
               <div className="flex flex-wrap gap-2">
                 {cateringMenuOptions.map((item) => {
                   const selected = form.menuItems.includes(item);
@@ -434,7 +438,7 @@ export default function CateringInquiryForm() {
                       key={item}
                       type="button"
                       onClick={() => toggleMenuItem(item)}
-                      className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                      className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors sm:px-3.5 sm:py-2 sm:text-sm ${
                         selected
                           ? 'bg-forest text-ivory'
                           : 'bg-slate-deep/5 text-slate-deep hover:bg-slate-deep/10'
@@ -453,7 +457,7 @@ export default function CateringInquiryForm() {
               </label>
               <textarea
                 id="catering-message"
-                rows={4}
+                rows={3}
                 value={form.message}
                 onChange={(e) => update('message', e.target.value)}
                 placeholder="Styl menu, alergie, průběh akce, rozpočet…"
@@ -471,25 +475,25 @@ export default function CateringInquiryForm() {
         <p className="mt-4 rounded-xl bg-terracotta/10 px-4 py-3 text-sm text-terracotta">{error}</p>
       )}
 
-      <div className="mt-6 flex items-center justify-between gap-3 border-t border-slate-deep/5 pt-5">
+      <div className="mt-5 flex flex-col-reverse gap-3 border-t border-slate-deep/5 pt-4 sm:mt-6 sm:flex-row sm:items-center sm:justify-between sm:pt-5">
         {step > 1 ? (
           <button
             type="button"
             onClick={goBack}
-            className="inline-flex items-center gap-2 rounded-2xl border border-slate-deep/10 px-5 py-2.5 text-sm font-semibold text-slate-deep transition-colors hover:border-slate-deep/20"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-deep/10 px-5 py-2.5 text-sm font-semibold text-slate-deep transition-colors hover:border-slate-deep/20 sm:w-auto sm:rounded-2xl sm:py-3 sm:text-base"
           >
             <ArrowLeft className="h-4 w-4" />
             Zpět
           </button>
         ) : (
-          <span />
+          <span className="hidden sm:block" />
         )}
 
         {step < 3 ? (
           <button
             type="button"
             onClick={goNext}
-            className="inline-flex items-center gap-2 rounded-2xl bg-forest px-6 py-2.5 text-sm font-semibold text-ivory transition-colors hover:bg-forest-light"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-forest px-6 py-2.5 text-sm font-semibold text-ivory transition-colors hover:bg-forest-light sm:w-auto sm:rounded-2xl sm:py-3 sm:text-base"
           >
             Pokračovat
             <ArrowRight className="h-4 w-4" />
@@ -497,7 +501,7 @@ export default function CateringInquiryForm() {
         ) : (
           <button
             type="submit"
-            className="inline-flex items-center gap-2 rounded-2xl bg-forest px-6 py-2.5 text-sm font-semibold text-ivory transition-colors hover:bg-forest-light"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-forest px-6 py-2.5 text-sm font-semibold text-ivory transition-colors hover:bg-forest-light sm:w-auto sm:rounded-2xl sm:py-3 sm:text-base"
           >
             <Send className="h-4 w-4" />
             Odeslat poptávku

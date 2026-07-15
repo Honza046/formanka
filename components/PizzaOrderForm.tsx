@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { CheckCircle2, ChevronDown, ChevronUp, Clock, CreditCard, Minus, Plus, ShoppingBag, Wallet } from 'lucide-react';
 import { pizzaExtras, pizzaMenu, formatPrice, pizzaBoxPrice } from '@/lib/data';
 import { lineItemTotal, orderItemsTotal } from '@/lib/pizza-pricing';
@@ -128,7 +129,7 @@ export default function PizzaOrderForm() {
   const [ordersOpen, setOrdersOpen] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState<{ id: string; pickupTime: string } | null>(null);
+  const [success, setSuccess] = useState<{ id: string; pickupTime: string; phone: string } | null>(null);
   const [slots, setSlots] = useState(() => getPickupSlots());
   const cartRef = useRef<HTMLDivElement>(null);
   const checkoutRef = useRef<HTMLDivElement>(null);
@@ -226,7 +227,12 @@ export default function PizzaOrderForm() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      setSuccess({ id: data.order.id, pickupTime: data.order.pickupTime });
+      setSuccess({
+        id: data.order.id,
+        pickupTime: data.order.pickupTime,
+        phone,
+      });
+      sessionStorage.setItem(`formanka-order-phone:${data.order.id}`, phone);
       setCart([]);
       setName('');
       setPhone('');
@@ -261,12 +267,18 @@ export default function PizzaOrderForm() {
           </strong>
         </p>
         <p className="mt-4 text-sm text-slate-deep/60">
-          Počkejte prosím na potvrzení z kuchyně. Ozveme se vám, pokud bude potřeba.
+          Počkejte prosím na potvrzení z kuchyně. Stav objednávky uvidíte níže.
         </p>
+        <Link
+          href={`/pizza/objednavka/${success.id}`}
+          className="mt-6 inline-flex w-full items-center justify-center rounded-2xl bg-forest px-6 py-3 text-sm font-semibold text-ivory transition-colors hover:bg-forest-light sm:w-auto"
+        >
+          Sledovat stav objednávky
+        </Link>
         <button
           type="button"
           onClick={() => setSuccess(null)}
-          className="mt-6 text-sm font-semibold text-forest hover:underline"
+          className="mt-4 block w-full text-sm font-semibold text-forest hover:underline sm:mx-auto sm:w-auto"
         >
           Nová objednávka
         </button>
