@@ -191,6 +191,14 @@ export default function PizzaOrderForm() {
     setCart((prev) => prev.filter((line) => line.id !== id));
   };
 
+  // Funkce pro validaci a nastavení telefonního čísla na max 9 číslic
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, ""); // Odstraní vše kromě číslic
+    if (value.length <= 9) {
+      setPhone(value);
+    }
+  };
+
   const totalPizzas = cart.reduce((s, i) => s + i.quantity, 0);
   const orderTotal = orderItemsTotal(cart);
 
@@ -471,8 +479,9 @@ export default function PizzaOrderForm() {
                 type="tel"
                 required
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+420 ..."
+                onChange={handlePhoneChange}
+                placeholder="774173331"
+                maxLength={9}
                 className="w-full rounded-xl border border-slate-deep/10 bg-ivory px-4 py-2.5 text-sm outline-none focus:border-forest focus:ring-2 focus:ring-forest/20"
               />
             </div>
