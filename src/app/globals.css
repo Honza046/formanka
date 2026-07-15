@@ -1,0 +1,54 @@
+@import 'tailwindcss';
+
+@source '../../components';
+@source '../';
+
+@theme {
+  /* Na Formance – barvy z loga a vizitek */
+  --color-ivory: #faf8f4;
+  --color-cream: #f3ede3;
+
+  --color-navy: #283040;
+  --color-navy-light: #354458;
+  --color-navy-muted: #4a5d73;
+
+  --color-gold: #bfa05f;
+  --color-gold-light: #d4b878;
+  --color-gold-muted: #e8d9bc;
+
+  /* Alias pro stávající třídy v komponentách */
+  --color-forest: #283040;
+  --color-forest-light: #354458;
+  --color-slate-deep: #283040;
+  --color-terracotta: #bfa05f;
+  --color-terracotta-muted: #d4b878;
+
+  --font-serif: var(--font-playfair), Georgia, 'Times New Roman', serif;
+  --font-sans: var(--font-jakarta), system-ui, sans-serif;
+
+  --font-family-serif: var(--font-serif);
+  --font-family-sans: var(--font-sans);
+}
+
+html {
+  overscroll-behavior: none;
+  background-color: var(--color-navy);
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-ivory);
+  color: var(--color-navy);
+  overscroll-behavior: none;
+}
+
+/* Jemná textura pro teplejší dojem */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0.02;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
