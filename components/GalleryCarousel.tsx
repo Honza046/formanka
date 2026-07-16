@@ -39,6 +39,8 @@ type GalleryCarouselProps = {
 export default function GalleryCarousel({ images: imagesProp, autoplay = true }: GalleryCarouselProps) {
   const images = useMemo(() => {
     const source = imagesProp ?? mixedCarouselImages();
+    // Homepage marquee: limit; full gallery page keeps all passed images
+    if (imagesProp) return source;
     return source.slice(0, 10);
   }, [imagesProp]);
   const loopImages = useMemo(() => [...images, ...images], [images]);

@@ -11,11 +11,19 @@ function formatRating(rating: number): string {
   return rating.toFixed(1).replace('.', ',');
 }
 
-function Stars({ rating, size = 'sm' }: { rating: number; size?: 'sm' | 'md' }) {
+function Stars({
+  rating,
+  size = 'sm',
+  className = '',
+}: {
+  rating: number;
+  size?: 'sm' | 'md';
+  className?: string;
+}) {
   const iconClass = size === 'md' ? 'h-4 w-4' : 'h-3.5 w-3.5';
 
   return (
-    <div className="flex items-center gap-0.5" aria-hidden>
+    <div className={`inline-flex items-center justify-center gap-0.5 ${className}`} aria-hidden>
       {Array.from({ length: 5 }, (_, starIndex) => {
         const filled = starIndex + 1 <= Math.round(rating);
 
@@ -34,12 +42,16 @@ function Stars({ rating, size = 'sm' }: { rating: number; size?: 'sm' | 'md' }) 
 function ReviewCard({ review }: { review: (typeof googleReviewItems)[number] }) {
   return (
     <article className="mx-auto w-full max-w-2xl px-2 text-center sm:px-6">
-      <Stars rating={review.rating} size="md" />
-      <p className="mt-5 font-serif text-xl leading-relaxed text-navy/85 sm:text-2xl">
+      <p className="font-serif text-xl leading-relaxed text-navy/85 sm:text-2xl">
         „{review.text}"
       </p>
-      <p className="mt-5 text-sm font-semibold text-navy">{review.author}</p>
-      <p className="mt-1 text-xs text-navy/40">{review.relativeDate} · Google</p>
+      <p className="mt-6 text-sm font-semibold text-navy">{review.author}</p>
+      <p className="mt-1 inline-flex items-center justify-center gap-2 text-xs text-navy/40">
+        <Stars rating={review.rating} />
+        <span>
+          {review.relativeDate} · Google
+        </span>
+      </p>
     </article>
   );
 }
@@ -47,14 +59,10 @@ function ReviewCard({ review }: { review: (typeof googleReviewItems)[number] }) 
 export default function GoogleReviewsSection() {
   const [index, setIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
-  const [paused, setPaused] = useState(false);
   const [progressKey, setProgressKey] = useState(0);
-  const wasPausedRef = useRef(false);
-  const pausedRef = useRef(false);
   const indexRef = useRef(0);
   const transitioningRef = useRef(false);
 
-  pausedRef.current = paused;
   indexRef.current = index;
 
   const advance = useCallback((nextIndex: number) => {
@@ -83,27 +91,20 @@ export default function GoogleReviewsSection() {
     [advance, index],
   );
 
-  const handleProgressComplete = useCallback(() => {
-    if (pausedRef.current || transitioningRef.current || googleReviewItems.length <= 1) return;
-    advance((indexRef.current + 1) % googleReviewItems.length);
+  const goNext = useCallback(() => {
+    if (transitioningRef.current || googleReviewItems.length <= 1) return;
+    advance(indexRef.current + 1);
   }, [advance]);
 
   useEffect(() => {
-    if (wasPausedRef.current && !paused) {
-      setProgressKey((key) => key + 1);
-    }
-    wasPausedRef.current = paused;
-  }, [paused]);
-
-  useEffect(() => {
-    if (paused || googleReviewItems.length <= 1) return;
+    if (googleReviewItems.length <= 1) return;
 
     const timer = window.setTimeout(() => {
-      handleProgressComplete();
+      goNext();
     }, ROTATE_MS);
 
     return () => window.clearTimeout(timer);
-  }, [handleProgressComplete, paused, progressKey]);
+  }, [goNext, progressKey]);
 
   return (
     <section className="relative overflow-hidden border-y border-navy/5 bg-gradient-to-b from-cream/70 via-ivory to-cream/50 px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
@@ -136,10 +137,6 @@ export default function GoogleReviewsSection() {
           </a>
         </div>
 
-        <div
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
-        >
         <div className="relative mt-10">
           <button
             type="button"
@@ -193,7 +190,7 @@ export default function GoogleReviewsSection() {
                     aria-valuemin={0}
                     aria-valuemax={100}
                     aria-label="Čas do další recenze"
-                    className={`review-progress-fill absolute inset-y-0 left-0 w-full rounded-full bg-gold ${paused ? '[animation-play-state:paused]' : ''}`}
+                    className="review-progress-fill absolute inset-y-0 left-0 w-full rounded-full bg-gold"
                     style={{ ['--review-duration' as string]: `${ROTATE_MS}ms` }}
                   />
                 )}
@@ -201,8 +198,6 @@ export default function GoogleReviewsSection() {
             );
           })}
         </div>
-        </div>
-
         <p className="mt-5 text-center text-xs text-navy/40">
           Zobrazeno několik nedávných hodnocení z Google Maps.
         </p>

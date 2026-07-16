@@ -22,7 +22,7 @@ const sizePx = {
 export default function SiteLogo({ size = 'md', className = '' }: SiteLogoProps) {
   return (
     <Image
-      src="/logo-sm.jpg"
+      src="/logo.jpg"
       alt={site.fullName}
       width={sizePx[size]}
       height={sizePx[size]}
