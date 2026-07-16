@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Playfair_Display, Plus_Jakarta_Sans } from 'next/font/google';
 import { unstable_noStore as noStore } from 'next/cache';
+import { Analytics } from '@vercel/analytics/next';
 import ConditionalSiteChrome from '@/components/ConditionalSiteChrome';
 import { site } from '@/lib/data';
 import { getStore } from '@/lib/pizza-orders/store';
@@ -35,6 +36,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="cs" className={`${playfair.variable} ${jakarta.variable}`}>
       <body className="min-h-screen bg-ivory font-sans text-slate-deep antialiased">
         <ConditionalSiteChrome announcement={store.siteAnnouncement}>{children}</ConditionalSiteChrome>
+        <Analytics />
       </body>
     </html>
   );
