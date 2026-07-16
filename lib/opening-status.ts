@@ -46,20 +46,32 @@ type DaySchedule = {
   closeLabel: string;
 };
 
-function parseHoursString(hours: string): { openMinutes: number; closeMinutes: number; openLabel: string; closeLabel: string } | null {
+function parseHoursString(
+  hours: string,
+): { openMinutes: number; closeMinutes: number; openLabel: string; closeLabel: string } | null {
   const match = hours.match(/(\d{1,2}):(\d{2})\s*[–-]\s*(\d{1,2}):(\d{2})/);
   if (!match) return null;
 
   const openH = Number(match[1]);
   const openM = Number(match[2]);
-  const closeH = Number(match[3]);
+  let closeH = Number(match[3]);
   const closeM = Number(match[4]);
+
+  // 24:00 = půlnoc (konec dne)
+  if (closeH === 24 && closeM === 0) {
+    closeH = 24;
+  }
+
+  const closeMinutes = closeH * 60 + closeM;
 
   return {
     openMinutes: openH * 60 + openM,
-    closeMinutes: closeH * 60 + closeM,
+    closeMinutes: closeMinutes === 0 ? 24 * 60 : closeMinutes,
     openLabel: `${String(openH).padStart(2, '0')}:${String(openM).padStart(2, '0')}`,
-    closeLabel: `${String(closeH).padStart(2, '0')}:${String(closeM).padStart(2, '0')}`,
+    closeLabel:
+      closeH === 24 && closeM === 0
+        ? '24:00'
+        : `${String(closeH).padStart(2, '0')}:${String(closeM).padStart(2, '0')}`,
   };
 }
 
@@ -79,8 +91,34 @@ function buildSchedule(): DaySchedule[] {
 
 const schedule = buildSchedule();
 
-function nowInPrague(now = new Date()): Date {
-  return new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Prague' }));
+/** Spolehlivý čas v Europe/Prague (bez Date.parse locale hacku). */
+function getPragueClock(now = new Date()): { dayIndex: number; nowMinutes: number } {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Prague',
+    weekday: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(now);
+
+  const weekday = parts.find((part) => part.type === 'weekday')?.value ?? '';
+  const hour = Number(parts.find((part) => part.type === 'hour')?.value ?? '0');
+  const minute = Number(parts.find((part) => part.type === 'minute')?.value ?? '0');
+
+  const weekdayToIndex: Record<string, number> = {
+    Sun: 0,
+    Mon: 1,
+    Tue: 2,
+    Wed: 3,
+    Thu: 4,
+    Fri: 5,
+    Sat: 6,
+  };
+
+  return {
+    dayIndex: weekdayToIndex[weekday] ?? now.getDay(),
+    nowMinutes: hour * 60 + minute,
+  };
 }
 
 export function getOpeningStatus(
@@ -88,9 +126,7 @@ export function getOpeningStatus(
   settings: Partial<OpeningStatusSettings> = {},
 ): OpeningStatus {
   const labels = { ...defaultSettings, ...settings };
-  const pragueNow = nowInPrague(now);
-  const dayIndex = pragueNow.getDay();
-  const nowMinutes = pragueNow.getHours() * 60 + pragueNow.getMinutes();
+  const { dayIndex, nowMinutes } = getPragueClock(now);
 
   const today = schedule.find((entry) => entry.dayIndex === dayIndex);
 

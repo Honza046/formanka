@@ -120,8 +120,8 @@ export const navLinks = [
 export const openingHours = [
   { day: 'Pondělí', hours: 'Zavřeno' },
   { day: 'Úterý', hours: 'Zavřeno' },
-  { day: 'Středa', hours: '17:00 – 22:00' },
-  { day: 'Čtvrtek', hours: '17:00 – 22:00' },
+  { day: 'Středa', hours: '17:00 – 24:00' },
+  { day: 'Čtvrtek', hours: '17:00 – 24:00' },
   { day: 'Pátek', hours: '17:00 – 24:00' },
   { day: 'Sobota', hours: '17:00 – 24:00' },
   { day: 'Neděle', hours: '17:00 – 22:00' },
