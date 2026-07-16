@@ -37,9 +37,12 @@ type GalleryCarouselProps = {
 };
 
 export default function GalleryCarousel({ images: imagesProp, autoplay = true }: GalleryCarouselProps) {
-  const images = imagesProp ?? mixedCarouselImages();
+  const images = useMemo(() => {
+    const source = imagesProp ?? mixedCarouselImages();
+    return source.slice(0, 10);
+  }, [imagesProp]);
   const loopImages = useMemo(() => [...images, ...images], [images]);
-  const duration = Math.max(images.length * 4.5, 28);
+  const duration = Math.max(images.length * 5.5, 32);
 
   if (images.length === 0) {
     return null;

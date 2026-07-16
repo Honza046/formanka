@@ -22,10 +22,11 @@ const sizePx = {
 export default function SiteLogo({ size = 'md', className = '' }: SiteLogoProps) {
   return (
     <Image
-      src="/logo.jpg"
+      src="/logo-sm.jpg"
       alt={site.fullName}
       width={sizePx[size]}
       height={sizePx[size]}
+      sizes={`${sizePx[size]}px`}
       className={`${sizeClass[size]} shrink-0 rounded-full object-cover shadow-sm ring-1 ring-slate-deep/10 ${className}`}
       priority={size === 'md'}
     />

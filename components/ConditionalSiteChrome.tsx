@@ -1,17 +1,18 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import SiteAnnouncementBar from '@/components/SiteAnnouncementBar';
-import type { SiteAnnouncementSettings } from '@/lib/pizza-orders/types';
+import type { ReactNode } from 'react';
 
 export default function ConditionalSiteChrome({
   children,
   announcement,
+  navbar,
+  footer,
 }: {
-  children: React.ReactNode;
-  announcement: SiteAnnouncementSettings | null;
+  children: ReactNode;
+  announcement: ReactNode;
+  navbar: ReactNode;
+  footer: ReactNode;
 }) {
   const pathname = usePathname();
   const isKitchenApp = pathname.startsWith('/pizza/kuchyne');
@@ -22,10 +23,10 @@ export default function ConditionalSiteChrome({
 
   return (
     <>
-      <SiteAnnouncementBar announcement={announcement} />
-      <Navbar />
+      {announcement}
+      {navbar}
       {children}
-      <Footer />
+      {footer}
     </>
   );
 }

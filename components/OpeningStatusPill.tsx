@@ -8,19 +8,27 @@ import type { OpeningStatusSettings } from '@/lib/pizza-orders/types';
 
 const variantStyles: Record<OpeningStatus['variant'], { dot: string; ring: string; dotAnimation: string }> = {
   open: { dot: 'bg-emerald-500', ring: 'ring-emerald-500/20', dotAnimation: 'animate-status-dot-open' },
-  soon: { dot: 'bg-red-500', ring: 'ring-red-500/20', dotAnimation: 'animate-status-dot-blink' },
+  soon: { dot: 'bg-amber-400', ring: 'ring-amber-400/25', dotAnimation: 'animate-status-dot-blink' },
   closed: { dot: 'bg-red-500', ring: 'ring-red-500/20', dotAnimation: 'animate-status-dot-blink' },
 };
 
 type OpeningStatusPillProps = {
   variant?: 'default' | 'onDark';
   settings?: Partial<OpeningStatusSettings>;
+  initialStatus?: OpeningStatus;
+  /** Skrýt telefonní pilulku (hero už má CTA). */
+  showPhone?: boolean;
 };
 
-export default function OpeningStatusPill({ variant = 'default', settings }: OpeningStatusPillProps) {
-  const [status, setStatus] = useState<OpeningStatus | null>(null);
+export default function OpeningStatusPill({
+  variant = 'default',
+  settings,
+  initialStatus,
+  showPhone = true,
+}: OpeningStatusPillProps) {
+  const [status, setStatus] = useState<OpeningStatus | null>(initialStatus ?? null);
   const [showAlternate, setShowAlternate] = useState(false);
-  const [displayMessage, setDisplayMessage] = useState('Načítám otevírací dobu…');
+  const [displayMessage, setDisplayMessage] = useState(initialStatus?.message ?? 'Načítám otevírací dobu…');
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
@@ -49,7 +57,7 @@ export default function OpeningStatusPill({ variant = 'default', settings }: Ope
     return status.message;
   }, [status, showAlternate]);
 
-  const displayVariant: OpeningStatus['variant'] = status?.variant === 'open' ? 'open' : 'closed';
+  const displayVariant: OpeningStatus['variant'] = status?.variant ?? 'closed';
 
   useEffect(() => {
     if (!nextMessage) return;
@@ -67,12 +75,13 @@ export default function OpeningStatusPill({ variant = 'default', settings }: Ope
   const widthMessage = useMemo(() => {
     const candidates = [
       settings?.closedLabel ?? 'Nyní máme zavřeno',
+      settings?.openLabel ?? 'Nyní máme otevřeno · do 24:00',
       status?.message,
       status?.alternateMessage,
     ].filter((value): value is string => Boolean(value));
 
     return candidates.reduce((longest, current) => (current.length > longest.length ? current : longest), '');
-  }, [settings?.closedLabel, status?.alternateMessage, status?.message]);
+  }, [settings?.closedLabel, settings?.openLabel, status?.alternateMessage, status?.message]);
 
   const styles = variantStyles[displayVariant];
   const onDark = variant === 'onDark';
@@ -85,6 +94,7 @@ export default function OpeningStatusPill({ variant = 'default', settings }: Ope
       <span
         className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 ring-1 ${styles.ring} ${pillClass}`}
         suppressHydrationWarning
+        aria-live="polite"
       >
         <span
           className={`h-2 w-2 shrink-0 rounded-full ${styles.dot} ${status ? styles.dotAnimation : ''}`}
@@ -104,13 +114,15 @@ export default function OpeningStatusPill({ variant = 'default', settings }: Ope
         </span>
       </span>
 
-      <a
-        href={`tel:${site.phones[0].replace(/\s/g, '')}`}
-        className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 ring-1 transition ${pillClass}`}
-      >
-        <Phone className={`h-4 w-4 ${onDark ? 'text-gold-light' : 'text-gold'}`} />
-        {site.phones[0]}
-      </a>
+      {showPhone && (
+        <a
+          href={`tel:${site.phones[0].replace(/\s/g, '')}`}
+          className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 ring-1 transition ${pillClass}`}
+        >
+          <Phone className={`h-4 w-4 ${onDark ? 'text-gold-light' : 'text-gold'}`} />
+          {site.phones[0]}
+        </a>
+      )}
     </div>
   );
 }

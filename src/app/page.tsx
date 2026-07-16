@@ -1,4 +1,3 @@
-import { unstable_noStore as noStore } from 'next/cache';
 import HomeHero from '@/components/HomeHero';
 import HeroBento from '@/components/HeroBento';
 import HomePizzaTeaser from '@/components/HomePizzaTeaser';
@@ -7,8 +6,9 @@ import HomeLocationSection from '@/components/HomeLocationSection';
 import GoogleReviewsSection from '@/components/GoogleReviewsSection';
 import { getStore } from '@/lib/pizza-orders/store';
 
+export const revalidate = 60;
+
 export default async function HomePage() {
-  noStore();
   const store = await getStore();
   const content = store.websiteContent.home;
 

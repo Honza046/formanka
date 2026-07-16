@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Quote, Star } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import { googleReviewItems, googleReviews, site } from '@/lib/data';
 
 const ROTATE_MS = 6500;
@@ -31,54 +31,20 @@ function Stars({ rating, size = 'sm' }: { rating: number; size?: 'sm' | 'md' }) 
   );
 }
 
-function avatarColor(name: string): string {
-  const palette = [
-    'bg-navy text-ivory',
-    'bg-gold text-navy',
-    'bg-forest text-ivory',
-    'bg-cream text-navy ring-1 ring-navy/10',
-  ];
-
-  return palette[name.charCodeAt(0) % palette.length];
-}
-
 function ReviewCard({ review }: { review: (typeof googleReviewItems)[number] }) {
   return (
-    <article className="relative mx-auto w-full max-w-2xl overflow-hidden rounded-3xl border border-navy/5 bg-white p-6 shadow-[0_8px_30px_rgb(40_48_64_/_0.06)] sm:p-8">
-      <Quote
-        className="pointer-events-none absolute -right-2 -top-1 h-16 w-16 text-gold/10 sm:h-20 sm:w-20"
-        strokeWidth={1}
-        aria-hidden
-      />
-
-      <div className="relative flex items-start gap-3.5">
-        <div
-          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-sm font-bold shadow-sm ${avatarColor(review.author)}`}
-          aria-hidden
-        >
-          {review.author.charAt(0)}
-        </div>
-        <div className="min-w-0 flex-1 pt-0.5">
-          <p className="font-semibold text-navy">{review.author}</p>
-          <p className="mt-0.5 text-xs text-navy/45">Recenze na Google</p>
-        </div>
-      </div>
-
-      <div className="relative mt-5 flex flex-wrap items-center gap-2.5">
-        <Stars rating={review.rating} size="md" />
-        <span className="text-xs text-navy/40">·</span>
-        <span className="text-xs text-navy/45">{review.relativeDate}</span>
-      </div>
-
-      <p className="relative mt-5 font-serif text-lg leading-relaxed text-navy/80 sm:text-xl">
+    <article className="mx-auto w-full max-w-2xl px-2 text-center sm:px-6">
+      <Stars rating={review.rating} size="md" />
+      <p className="mt-5 font-serif text-xl leading-relaxed text-navy/85 sm:text-2xl">
         „{review.text}"
       </p>
+      <p className="mt-5 text-sm font-semibold text-navy">{review.author}</p>
+      <p className="mt-1 text-xs text-navy/40">{review.relativeDate} · Google</p>
     </article>
   );
 }
 
 export default function GoogleReviewsSection() {
-  const fullStars = Math.floor(googleReviews.rating);
   const [index, setIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
   const [paused, setPaused] = useState(false);
@@ -152,44 +118,21 @@ export default function GoogleReviewsSection() {
           <h2 className="mt-2 font-serif text-3xl font-bold text-navy sm:text-4xl">Co říkají na Google</h2>
         </div>
 
-        <div className="mx-auto mt-8 flex max-w-xl flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-center">
-          <div
-            className="flex flex-1 items-center gap-4 rounded-2xl border border-navy/5 bg-white/90 px-5 py-4 shadow-sm backdrop-blur-sm"
-            aria-label={`Hodnocení ${formatRating(googleReviews.rating)} z 5`}
-          >
-            <span className="font-serif text-4xl font-bold leading-none text-navy">
-              {formatRating(googleReviews.rating)}
-            </span>
-            <div className="h-10 w-px bg-navy/10" aria-hidden />
-            <div>
-              <div className="flex items-center gap-0.5">
-                {Array.from({ length: 5 }, (_, starIndex) => {
-                  const filled = starIndex + 1 <= fullStars;
-
-                  return (
-                    <Star
-                      key={starIndex}
-                      className={`h-5 w-5 ${filled ? 'fill-gold text-gold' : 'fill-navy/10 text-navy/15'}`}
-                      strokeWidth={1.5}
-                      aria-hidden
-                    />
-                  );
-                })}
-              </div>
-              <p className="mt-1 text-xs font-medium text-navy/55">{googleReviews.reviewCount} recenzí</p>
-            </div>
-          </div>
-
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-navy/60">
+          <span className="inline-flex items-center gap-2 font-serif text-2xl font-bold text-navy">
+            {formatRating(googleReviews.rating)}
+            <Stars rating={googleReviews.rating} size="md" />
+          </span>
+          <span aria-hidden>·</span>
+          <span>{googleReviews.reviewCount} recenzí</span>
+          <span aria-hidden>·</span>
           <a
             href={site.googleMapsPlaceUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2.5 rounded-2xl border border-navy/10 bg-white/90 px-5 py-4 text-sm font-semibold text-navy shadow-sm backdrop-blur-sm transition hover:border-gold/40 hover:bg-white"
+            className="font-semibold text-navy underline-offset-2 transition hover:text-gold hover:underline"
           >
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#f8f9fa] text-sm font-bold text-[#4285F4] ring-1 ring-navy/8">
-              G
-            </span>
-            Zobrazit vše na Google
+            Zobrazit na Google
           </a>
         </div>
 

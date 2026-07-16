@@ -13,11 +13,12 @@ import type {
 import { activeStatuses, pizzaCount } from './types';
 import { isOrderPageTimeOpen, isOrdersOpen } from './pickup-slots';
 import { loadStore, saveStoreData } from './persistence';
+import { getPragueClock } from '@/lib/prague-time';
 
 const DEFAULT_MAX_PIZZAS = 40;
 
 function todayDate(): string {
-  return new Date().toISOString().slice(0, 10);
+  return getPragueClock().dateKey;
 }
 
 function defaultCapacity(): DailyCapacity {

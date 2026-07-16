@@ -47,7 +47,7 @@ export default function DrinkMenuTabs() {
       <div role="tabpanel">
         {activeTab === 'summer' && (
           <p className="mb-6 text-sm text-slate-deep/60">
-            Sezónní nabídka platí v letních měsících. Konkréní položky se mohou lišit dle aktuální nabídky.
+            Sezónní nabídka platí v letních měsících. Konkrétní položky se mohou lišit dle aktuální nabídky.
           </p>
         )}
         <MenuList categories={menuData[activeTab]} />

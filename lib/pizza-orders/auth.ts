@@ -4,8 +4,17 @@ import { cookies } from 'next/headers';
 const COOKIE_NAME = 'kitchen_session';
 const TOKEN_TTL_MS = 12 * 60 * 60 * 1000; // 12 hodin
 
+function isProduction(): boolean {
+  return process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production';
+}
+
 function secret(): string {
-  return process.env.KITCHEN_SECRET || process.env.KITCHEN_PIN || 'formanka-dev-secret';
+  const value = process.env.KITCHEN_SECRET || process.env.KITCHEN_PIN;
+  if (value) return value;
+  if (isProduction()) {
+    throw new Error('KITCHEN_SECRET nebo KITCHEN_PIN musí být nastavené v produkci.');
+  }
+  return 'formanka-dev-secret';
 }
 
 function sign(payload: string): string {
@@ -13,7 +22,11 @@ function sign(payload: string): string {
 }
 
 export function verifyKitchenPin(pin: unknown): boolean {
-  const expected = process.env.KITCHEN_PIN || '1234';
+  const expected = process.env.KITCHEN_PIN;
+  if (!expected) {
+    if (isProduction()) return false;
+    return String(pin ?? '').trim() === '1234';
+  }
   return String(pin ?? '').trim() === expected;
 }
 

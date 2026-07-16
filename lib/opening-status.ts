@@ -1,5 +1,6 @@
 import { openingHours } from '@/lib/data';
 import type { OpeningStatusSettings } from '@/lib/pizza-orders/types';
+import { getPragueClock } from '@/lib/prague-time';
 
 export type OpeningStatus = {
   isOpen: boolean;
@@ -90,36 +91,6 @@ function buildSchedule(): DaySchedule[] {
 }
 
 const schedule = buildSchedule();
-
-/** Spolehlivý čas v Europe/Prague (bez Date.parse locale hacku). */
-function getPragueClock(now = new Date()): { dayIndex: number; nowMinutes: number } {
-  const parts = new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'Europe/Prague',
-    weekday: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-    hourCycle: 'h23',
-  }).formatToParts(now);
-
-  const weekday = parts.find((part) => part.type === 'weekday')?.value ?? '';
-  const hour = Number(parts.find((part) => part.type === 'hour')?.value ?? '0');
-  const minute = Number(parts.find((part) => part.type === 'minute')?.value ?? '0');
-
-  const weekdayToIndex: Record<string, number> = {
-    Sun: 0,
-    Mon: 1,
-    Tue: 2,
-    Wed: 3,
-    Thu: 4,
-    Fri: 5,
-    Sat: 6,
-  };
-
-  return {
-    dayIndex: weekdayToIndex[weekday] ?? now.getDay(),
-    nowMinutes: hour * 60 + minute,
-  };
-}
 
 export function getOpeningStatus(
   now = new Date(),

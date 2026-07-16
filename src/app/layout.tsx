@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import { Playfair_Display, Plus_Jakarta_Sans } from 'next/font/google';
-import { unstable_noStore as noStore } from 'next/cache';
 import ConditionalSiteChrome from '@/components/ConditionalSiteChrome';
+import Footer from '@/components/Footer';
+import Navbar from '@/components/Navbar';
+import SiteAnnouncementBar from '@/components/SiteAnnouncementBar';
 import { site } from '@/lib/data';
 import { getStore } from '@/lib/pizza-orders/store';
 import './globals.css';
@@ -10,12 +12,14 @@ const playfair = Playfair_Display({
   subsets: ['latin', 'latin-ext'],
   variable: '--font-playfair',
   display: 'swap',
+  weight: ['400', '700'],
 });
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin', 'latin-ext'],
   variable: '--font-jakarta',
   display: 'swap',
+  weight: ['400', '500', '600', '700'],
 });
 
 const siteUrl =
@@ -56,14 +60,22 @@ export const metadata: Metadata = {
   },
 };
 
+/** Lišta z kuchyně se obnoví nejvýš jednou za minutu — stránky zůstávají cacheovatelné. */
+export const revalidate = 60;
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  noStore();
   const store = await getStore();
 
   return (
     <html lang="cs" className={`${playfair.variable} ${jakarta.variable}`}>
       <body className="min-h-screen bg-ivory font-sans text-slate-deep antialiased">
-        <ConditionalSiteChrome announcement={store.siteAnnouncement}>{children}</ConditionalSiteChrome>
+        <ConditionalSiteChrome
+          announcement={<SiteAnnouncementBar announcement={store.siteAnnouncement} />}
+          navbar={<Navbar />}
+          footer={<Footer />}
+        >
+          {children}
+        </ConditionalSiteChrome>
       </body>
     </html>
   );

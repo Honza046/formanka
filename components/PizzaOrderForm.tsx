@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { CheckCircle2, ChevronDown, ChevronUp, Clock, CreditCard, Minus, Plus, ShoppingBag, Wallet } from 'lucide-react';
+import { CheckCircle2, ChevronDown, ChevronUp, Clock, Minus, Plus, ShoppingBag, Wallet } from 'lucide-react';
 import { pizzaExtras, pizzaMenu, formatPrice, pizzaBoxPrice } from '@/lib/data';
 import { lineItemTotal, orderItemsTotal } from '@/lib/pizza-pricing';
 import type { OrderItem, OrderPageSettings, PaymentMethod } from '@/lib/pizza-orders/types';
@@ -121,7 +121,7 @@ export default function PizzaOrderForm() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [pickupTime, setPickupTime] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('on_site');
+  const [paymentMethod] = useState<PaymentMethod>('on_site');
   const [note, setNote] = useState('');
   const [remaining, setRemaining] = useState<number | null>(null);
   const [accepting, setAccepting] = useState(true);
@@ -247,7 +247,6 @@ export default function PizzaOrderForm() {
       setName('');
       setPhone('');
       setPickupTime('');
-      setPaymentMethod('on_site');
       setNote('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Chyba při odesílání.');
@@ -507,55 +506,20 @@ export default function PizzaOrderForm() {
           </div>
 
           <div>
-            <p className="mb-2 text-sm font-medium">
-              Platba <span className="text-terracotta">*</span>
-            </p>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('on_site')}
-                className={`flex items-start gap-3 rounded-2xl border p-4 text-left transition-colors ${
-                  paymentMethod === 'on_site'
-                    ? 'border-forest bg-forest/5 ring-2 ring-forest/20'
-                    : 'border-slate-deep/10 bg-white hover:border-slate-deep/20'
-                }`}
-              >
+            <p className="mb-2 text-sm font-medium">Platba</p>
+            <div className="rounded-2xl border border-slate-deep/10 bg-white p-4">
+              <div className="flex items-start gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-forest/10 text-forest">
                   <Wallet className="h-5 w-5" />
                 </span>
-                <span>
-                  <span className="block font-semibold text-slate-deep">Na místě</span>
-                  <span className="mt-0.5 block text-xs text-slate-deep/60">
+                <div>
+                  <p className="font-semibold text-slate-deep">Na místě</p>
+                  <p className="mt-0.5 text-xs text-slate-deep/60">
                     Hotově nebo kartou při vyzvednutí
-                  </span>
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('online')}
-                className={`flex items-start gap-3 rounded-2xl border p-4 text-left transition-colors ${
-                  paymentMethod === 'online'
-                    ? 'border-forest bg-forest/5 ring-2 ring-forest/20'
-                    : 'border-slate-deep/10 bg-white hover:border-slate-deep/20'
-                }`}
-              >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-forest/10 text-forest">
-                  <CreditCard className="h-5 w-5" />
-                </span>
-                <span>
-                  <span className="block font-semibold text-slate-deep">Online kartou</span>
-                  <span className="mt-0.5 block text-xs text-slate-deep/60">
-                    Zaplatíte kartou před vyzvednutím
-                  </span>
-                </span>
-              </button>
+                  </p>
+                </div>
+              </div>
             </div>
-            {paymentMethod === 'online' && (
-              <p className="mt-2 text-xs text-slate-deep/50">
-                Online platba zatím funguje jako rezervace, kartou zaplatíte po napojení platební
-                brány (GoPay / Stripe). Poplatek brány je obvykle cca 1 až 2&nbsp;% z částky.
-              </p>
-            )}
           </div>
 
           <div>
