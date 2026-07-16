@@ -1,10 +1,20 @@
 import { openingHours } from '@/lib/data';
+import type { OpeningStatusSettings } from '@/lib/pizza-orders/types';
 
 export type OpeningStatus = {
   isOpen: boolean;
   opensLaterToday: boolean;
   message: string;
+  alternateMessage?: string;
   variant: 'open' | 'soon' | 'closed';
+};
+
+const defaultSettings: OpeningStatusSettings = {
+  openLabel: 'Nyní máme otevřeno',
+  closedLabel: 'Nyní máme zavřeno',
+  opensTodayLabel: 'Otevíráme v',
+  opensAnotherDayLabel: 'Otevíráme',
+  untilLabel: 'do',
 };
 
 const DAY_TO_INDEX: Record<string, number> = {
@@ -17,14 +27,14 @@ const DAY_TO_INDEX: Record<string, number> = {
   Sobota: 6,
 };
 
-const INDEX_TO_DAY_ACC: Record<number, string> = {
-  0: 'v neděli',
-  1: 'v pondělí',
-  2: 'v úterý',
-  3: 've středu',
-  4: 've čtvrtek',
-  5: 'v pátek',
-  6: 'v sobotu',
+const INDEX_TO_DAY_SHORT: Record<number, string> = {
+  0: 'ne',
+  1: 'po',
+  2: 'út',
+  3: 'st',
+  4: 'čt',
+  5: 'pá',
+  6: 'so',
 };
 
 type DaySchedule = {
@@ -73,7 +83,11 @@ function nowInPrague(now = new Date()): Date {
   return new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Prague' }));
 }
 
-export function getOpeningStatus(now = new Date()): OpeningStatus {
+export function getOpeningStatus(
+  now = new Date(),
+  settings: Partial<OpeningStatusSettings> = {},
+): OpeningStatus {
+  const labels = { ...defaultSettings, ...settings };
   const pragueNow = nowInPrague(now);
   const dayIndex = pragueNow.getDay();
   const nowMinutes = pragueNow.getHours() * 60 + pragueNow.getMinutes();
@@ -86,7 +100,7 @@ export function getOpeningStatus(now = new Date()): OpeningStatus {
         isOpen: true,
         opensLaterToday: false,
         variant: 'open',
-        message: `Nyní máme otevřeno · do ${today.closeLabel}`,
+        message: `${labels.openLabel} · ${labels.untilLabel} ${today.closeLabel}`,
       };
     }
 
@@ -95,7 +109,8 @@ export function getOpeningStatus(now = new Date()): OpeningStatus {
         isOpen: false,
         opensLaterToday: true,
         variant: 'soon',
-        message: `Dnes otevíráme v ${today.openLabel}`,
+        message: labels.closedLabel,
+        alternateMessage: `${labels.opensTodayLabel} ${today.openLabel}`,
       };
     }
   }
@@ -109,7 +124,8 @@ export function getOpeningStatus(now = new Date()): OpeningStatus {
       isOpen: false,
       opensLaterToday: false,
       variant: 'closed',
-      message: `Nyní máme zavřeno · otevíráme ${INDEX_TO_DAY_ACC[nextIndex]} v ${next.openLabel}`,
+      message: labels.closedLabel,
+      alternateMessage: `${labels.opensAnotherDayLabel} ${INDEX_TO_DAY_SHORT[nextIndex]} ${next.openLabel}`,
     };
   }
 
@@ -117,6 +133,6 @@ export function getOpeningStatus(now = new Date()): OpeningStatus {
     isOpen: false,
     opensLaterToday: false,
     variant: 'closed',
-    message: 'Nyní máme zavřeno',
+    message: labels.closedLabel,
   };
 }

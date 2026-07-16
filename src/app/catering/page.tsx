@@ -1,23 +1,31 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { ArrowRight, Phone } from 'lucide-react';
+import { unstable_noStore as noStore } from 'next/cache';
+import { Phone } from 'lucide-react';
+import CateringOfferBanner from '@/components/CateringOfferBanner';
 import PageHero from '@/components/PageHero';
 import CateringInquiryForm from '@/components/CateringInquiryForm';
-import { cateringEvents, cateringInfo, offerIntro, services, site } from '@/lib/data';
+import { cateringEvents, cateringInfo, services, site, pageHeroImages } from '@/lib/data';
+import { getStore } from '@/lib/pizza-orders/store';
 
 export const metadata: Metadata = {
-  title: 'Catering & akce | Na Formance - Žeravice',
+  title: 'Catering & akce | Na Formance Žeravice',
   description: 'Catering, svatby, oslavy a firemní akce v Žeravicích u Kyjova.',
 };
 
-export default function CateringPage() {
+export default async function CateringPage() {
+  noStore();
+  const store = await getStore();
+  const content = store.websiteContent.catering;
+
   return (
     <main>
       <PageHero
         compact
-        eyebrow="Akce & oslavy"
-        title={cateringInfo.title}
-        description={cateringInfo.intro}
+        eyebrow={content.heroEyebrow}
+        title={content.heroTitle}
+        description={content.heroDescription}
+        image={pageHeroImages.catering.image}
+        imageAlt={pageHeroImages.catering.imageAlt}
       />
 
       <section className="px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
@@ -65,57 +73,39 @@ export default function CateringPage() {
             </ul>
           </div>
 
-          <div className="mt-8 rounded-2xl bg-slate-deep p-5 text-ivory sm:mt-10 sm:rounded-3xl sm:p-8 lg:p-10">
-            <h2 className="font-serif text-xl font-bold sm:text-2xl">{offerIntro.title}</h2>
-            <p className="mt-3 text-sm leading-relaxed text-ivory/80 sm:mt-4 sm:text-base">
-              {cateringInfo.rauts}
-            </p>
-            <ul className="mt-4 grid gap-2 sm:mt-6 sm:grid-cols-2">
-              {services.slice(2).map((service) => (
-                <li key={service} className="flex items-center gap-2 text-sm text-ivory/90">
-                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-terracotta-muted" />
-                  {service}
-                </li>
-              ))}
-            </ul>
-            <Link
-              href="#poptavka"
-              className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gold px-5 py-3 text-sm font-semibold text-navy transition hover:bg-gold-light sm:mt-6 sm:w-auto"
-            >
-              Poptat catering
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+          <div className="mt-8 sm:mt-10">
+            <CateringOfferBanner />
           </div>
         </div>
       </section>
 
-      <section id="poptavka" className="border-t border-slate-deep/5 bg-ivory px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+      <section id="poptavka" className="border-t border-slate-deep/5 bg-ivory px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         <div className="mx-auto max-w-6xl">
-          <div className="rounded-2xl bg-forest p-4 shadow-lg sm:rounded-3xl sm:p-8 lg:p-10">
-            <div className="mx-auto max-w-3xl text-center lg:max-w-none lg:text-left">
+          <div className="rounded-2xl bg-forest p-4 shadow-lg sm:rounded-3xl sm:p-5 lg:p-6">
+            <div className="mx-auto max-w-2xl text-center">
               <p className="text-xs font-semibold uppercase tracking-widest text-terracotta-muted sm:text-sm">
-                Nezávazně
+                {content.inquiryEyebrow}
               </p>
-              <h2 className="mt-1.5 font-serif text-2xl font-bold text-ivory sm:mt-2 sm:text-3xl">
-                Poptat catering
+              <h2 className="mt-1 font-serif text-2xl font-bold text-ivory sm:mt-1.5 sm:text-3xl">
+                {content.inquiryTitle}
               </h2>
-              <p className="mt-2 text-sm text-ivory/80 sm:mt-3 sm:text-base">
-                Vyplňte formulář — ozveme se s nabídkou na míru.
+              <p className="mt-1.5 text-sm text-ivory/80 sm:mt-2 sm:text-base">
+                {content.inquiryDescription}
               </p>
 
-              <div className="mt-4 flex flex-col gap-2 sm:mt-5 sm:flex-row sm:flex-wrap sm:justify-center lg:justify-start">
+              <div className="mt-3 flex flex-col gap-2 sm:mt-4 sm:flex-row sm:flex-wrap sm:justify-center">
                 {site.phones.map((phone) => (
                   <a
                     key={phone}
                     href={`tel:${phone.replace(/\s/g, '')}`}
-                    className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-ivory transition-colors hover:bg-white/20"
+                    className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-2 text-sm font-medium text-ivory transition-colors hover:bg-white/20"
                   >
                     <Phone className="h-3.5 w-3.5 shrink-0" />
                     {phone}
                   </a>
                 ))}
               </div>
-              <p className="mt-2 text-xs text-ivory/60 sm:text-sm">
+              <p className="mt-1.5 text-xs text-ivory/60 sm:text-sm">
                 nebo{' '}
                 <a href={`mailto:${site.email}`} className="font-medium text-ivory hover:underline">
                   {site.email}
@@ -123,7 +113,7 @@ export default function CateringPage() {
               </p>
             </div>
 
-            <div className="mt-6 rounded-xl bg-white p-5 text-left shadow-md sm:mt-8 sm:rounded-2xl sm:p-8 lg:p-10">
+            <div className="mx-auto mt-4 max-w-3xl rounded-xl bg-white p-3 text-left shadow-md sm:mt-5 sm:rounded-2xl sm:p-4 lg:p-5">
               <CateringInquiryForm />
             </div>
           </div>

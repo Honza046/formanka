@@ -1,4 +1,4 @@
-import { siteAnnouncement } from '@/lib/data';
+import type { SiteAnnouncementSettings } from '@/lib/pizza-orders/types';
 
 const variantStyles = {
   info: 'bg-navy text-ivory',
@@ -6,25 +6,31 @@ const variantStyles = {
   important: 'bg-navy text-gold-light ring-1 ring-gold/30',
 } as const;
 
-export default function SiteAnnouncementBar() {
-  if (!siteAnnouncement) {
+export default function SiteAnnouncementBar({
+  announcement,
+}: {
+  announcement?: SiteAnnouncementSettings | null;
+}) {
+  if (!announcement?.enabled || !announcement.message.trim()) {
     return null;
   }
 
-  const styles = variantStyles[siteAnnouncement.variant ?? 'info'];
+  const styles = variantStyles[announcement.variant ?? 'info'];
+  const href = announcement.href.trim();
+  const linkLabel = announcement.linkLabel.trim();
 
   return (
     <div className={`${styles} px-4 py-2.5 text-center text-sm sm:px-6`} role="status">
       <p className="mx-auto max-w-4xl leading-relaxed">
-        {siteAnnouncement.message}
-        {siteAnnouncement.href && siteAnnouncement.linkLabel && (
+        {announcement.message}
+        {href && linkLabel && (
           <>
             {' '}
             <a
-              href={siteAnnouncement.href}
+              href={href}
               className="font-semibold underline underline-offset-2 transition hover:opacity-80"
             >
-              {siteAnnouncement.linkLabel}
+              {linkLabel}
             </a>
           </>
         )}

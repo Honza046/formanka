@@ -2,6 +2,10 @@ const START_HOUR = 17;
 const END_HOUR = 22;
 const SLOT_MINUTES = 15;
 
+export function startHourLabel(): string {
+  return `${String(START_HOUR).padStart(2, '0')}:00`;
+}
+
 function roundUpToSlot(date: Date): Date {
   const rounded = new Date(date);
   rounded.setSeconds(0, 0);
@@ -64,4 +68,12 @@ export function isDevOrdersOpen(): boolean {
 
 export function isOrdersOpen(): boolean {
   return isPizzaDay() || isDevOrdersOpen();
+}
+
+export function isOrderPageTimeOpen(now = new Date()): boolean {
+  if (isDevOrdersOpen()) return true;
+  if (!isPizzaDay(now)) return false;
+
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  return currentMinutes >= START_HOUR * 60 && currentMinutes <= END_HOUR * 60;
 }

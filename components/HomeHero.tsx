@@ -2,9 +2,26 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import OpeningStatusPill from '@/components/OpeningStatusPill';
-import { homeHero, site } from '@/lib/data';
+import { homeHero } from '@/lib/data';
+import type { OpeningStatusSettings } from '@/lib/pizza-orders/types';
 
-export default function HomeHero() {
+type HomeHeroProps = {
+  eyebrow: string;
+  title: string;
+  description: string;
+  primaryCta: string;
+  secondaryCta: string;
+  openingStatusSettings?: Partial<OpeningStatusSettings>;
+};
+
+export default function HomeHero({
+  eyebrow,
+  title,
+  description,
+  primaryCta,
+  secondaryCta,
+  openingStatusSettings,
+}: HomeHeroProps) {
   return (
     <section className="relative min-h-[420px] overflow-hidden sm:min-h-[480px] lg:min-h-[52vh]">
       <Image
@@ -27,19 +44,19 @@ export default function HomeHero() {
 
       <div className="relative mx-auto flex min-h-[420px] max-w-7xl flex-col justify-end px-4 pb-10 pt-8 sm:min-h-[480px] sm:px-6 sm:pb-12 lg:min-h-[52vh] lg:px-8 lg:pb-14">
         <p className="text-sm font-semibold uppercase tracking-widest text-gold-light">
-          Rodinná restaurace · {site.address.note}
+          {eyebrow}
         </p>
 
         <h1 className="mt-3 font-serif text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-[3.25rem]">
-          {site.name}
+          {title}
         </h1>
 
         <p className="mt-4 max-w-lg text-base leading-relaxed text-white/85 sm:text-lg">
-          {site.taglineHero}
+          {description}
         </p>
 
         <div className="mt-6">
-          <OpeningStatusPill variant="onDark" />
+          <OpeningStatusPill variant="onDark" settings={openingStatusSettings} />
         </div>
 
         <div className="mt-8 flex flex-wrap gap-3">
@@ -47,14 +64,14 @@ export default function HomeHero() {
             href="/pizza/objednat"
             className="inline-flex items-center gap-2 rounded-full bg-gold px-6 py-3.5 text-sm font-semibold text-navy shadow-sm transition hover:bg-gold-light"
           >
-            Objednat pizzu
+            {primaryCta}
             <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
             href="/menu"
             className="inline-flex items-center gap-2 rounded-full bg-white/10 px-6 py-3.5 text-sm font-semibold text-white ring-1 ring-white/25 backdrop-blur-sm transition hover:bg-white/20"
           >
-            Zobrazit menu
+            {secondaryCta}
           </Link>
         </div>
       </div>

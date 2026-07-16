@@ -1,14 +1,20 @@
 import { NextResponse } from 'next/server';
 import { createOrder, getStore } from '@/lib/pizza-orders/store';
-import { isOrdersOpen } from '@/lib/pizza-orders/pickup-slots';
+import { getPickupSlots, isOrderPageTimeOpen, isOrdersOpen } from '@/lib/pizza-orders/pickup-slots';
 
 export async function GET() {
   const store = await getStore();
+  const orderPageOpen =
+    store.orderPage.mode === 'manual' ? store.orderPage.manualEnabled : isOrderPageTimeOpen();
+
   return NextResponse.json({
     remaining: store.remaining,
     maxPizzas: store.capacity.maxPizzas,
     acceptingOrders: store.capacity.acceptingOrders,
     ordersOpen: isOrdersOpen(),
+    orderPageOpen,
+    orderPage: store.orderPage,
+    slots: getPickupSlots(),
   });
 }
 

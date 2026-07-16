@@ -12,7 +12,7 @@ export default function HomeLocationSection() {
           <p className="text-sm font-semibold uppercase tracking-widest text-gold">Kde nás najdete</p>
           <h2 className="mt-2 font-serif text-3xl font-bold text-navy sm:text-4xl">{site.address.note}</h2>
           <p className="mx-auto mt-3 max-w-lg text-navy/60">
-            Restaurace Na Formance — {site.address.street}, {site.address.zip} {site.address.city}
+            Restaurace Na Formance, {site.address.street}, {site.address.zip} {site.address.city}
           </p>
         </div>
 

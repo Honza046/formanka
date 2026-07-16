@@ -17,7 +17,7 @@ export default function MapEmbed({
 
   return (
     <iframe
-      title="Mapa — Na Formance Žeravice"
+      title="Mapa Na Formance Žeravice"
       src={site.mapsEmbedUrl}
       className={sizeClass}
       loading="lazy"

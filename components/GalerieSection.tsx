@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { useState } from 'react';
-import ExpandableGalleryGrid from '@/components/ExpandableGalleryGrid';
 import GalleryCarousel from '@/components/GalleryCarousel';
 import {
   galleryCategories,
@@ -110,13 +109,7 @@ export default function GalerieSection({ compact = false, hideHeader = false }: 
           <p className="mx-auto mt-2 max-w-xl text-sm text-slate-deep/60">{activeCategory.description}</p>
         </div>
 
-        <ExpandableGalleryGrid
-          key={active}
-          images={activeImages}
-          initialRows={2}
-          priorityCount={8}
-          fadeBackgroundClass="from-ivory"
-        />
+        <GalleryCarousel key={active} images={activeImages} autoplay={false} />
 
         {active === 'pizza' && (
           <p className="mt-8 text-center text-sm text-slate-deep/50">

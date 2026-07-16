@@ -1,5 +1,4 @@
-import Link from 'next/link';
-import { Clock, Facebook, Instagram, Mail, MapPin, Phone } from 'lucide-react';
+import { Facebook, Instagram, Mail, MapPin, Phone } from 'lucide-react';
 import SiteLogo from '@/components/SiteLogo';
 import { openingHours, site } from '@/lib/data';
 
@@ -31,6 +30,13 @@ export default function Footer() {
                 aria-label="Instagram"
               >
                 <Instagram className="h-5 w-5" />
+              </a>
+              <a
+                href={`mailto:${site.email}?subject=${encodeURIComponent('Dotaz Na Formance Žeravice')}`}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-deep/5 text-slate-deep transition-colors hover:bg-forest/10 hover:text-forest"
+                aria-label="Napsat e-mail"
+              >
+                <Mail className="h-5 w-5" />
               </a>
             </div>
           </div>
@@ -67,9 +73,6 @@ export default function Footer() {
                 </span>
               </li>
             </ul>
-            <Link href="/kontakt" className="mt-4 inline-block text-sm font-semibold text-forest hover:underline">
-              Kontaktní formulář →
-            </Link>
           </div>
 
           <div>

@@ -7,7 +7,7 @@ type PageProps = {
 };
 
 export const metadata: Metadata = {
-  title: 'Stav objednávky | Na Formance - Žeravice',
+  title: 'Stav objednávky | Na Formance Žeravice',
   description: 'Sledujte stav vaší objednávky pizzy.',
   robots: 'noindex, nofollow',
 };

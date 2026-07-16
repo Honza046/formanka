@@ -1,22 +1,31 @@
 import type { Metadata } from 'next';
+import { unstable_noStore as noStore } from 'next/cache';
 import { Clock, Facebook, Instagram, MapPin } from 'lucide-react';
 import ContactForm from '@/components/ContactForm';
 import MapEmbed from '@/components/MapEmbed';
 import PageHero from '@/components/PageHero';
-import { openingHours, site } from '@/lib/data';
+import { openingHours, site, pageHeroImages } from '@/lib/data';
+import { getStore } from '@/lib/pizza-orders/store';
 
 export const metadata: Metadata = {
-  title: 'Kontakt | Na Formance - Žeravice',
+  title: 'Kontakt | Na Formance Žeravice',
   description: 'Kontaktujte restauraci Na Formance v Žeravicích. Žeravice 36, 696 47.',
 };
 
-export default function KontaktPage() {
+export default async function KontaktPage() {
+  noStore();
+  const store = await getStore();
+  const content = store.websiteContent.kontakt;
+
   return (
     <main>
       <PageHero
-        eyebrow="Jsme tu pro vás"
-        title="Kontaktujte nás"
-        description="Máte dotaz, chcete uspořádat akci nebo objednat pizzu? Napište nám nebo zavolejte."
+        eyebrow={content.heroEyebrow}
+        title={content.heroTitle}
+        description={content.heroDescription}
+        image={pageHeroImages.kontakt.image}
+        imageAlt={pageHeroImages.kontakt.imageAlt}
+        imagePosition="center"
       />
 
       <section className="px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
@@ -103,7 +112,7 @@ export default function KontaktPage() {
         <div className="mx-auto max-w-xl">
           <div className="mb-6 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-terracotta">
             <Clock className="h-4 w-4" />
-            Napište nám
+            {content.formEyebrow}
           </div>
           <div className="rounded-3xl border border-slate-deep/5 bg-ivory p-6 shadow-sm sm:p-8">
             <ContactForm />

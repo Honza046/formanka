@@ -14,14 +14,20 @@ const cardBase = `flex flex-col ${HOME_SURFACE_RADIUS} p-6 shadow-sm transition-
 const cardLink = `group ${cardBase} justify-between`;
 const homeServices = services.slice(0, 4);
 
-export default function HeroBento() {
+type HeroBentoProps = {
+  eyebrow: string;
+  title: string;
+  description: string;
+};
+
+export default function HeroBento({ eyebrow, title, description }: HeroBentoProps) {
   return (
     <section id="uvod" className="bg-white px-4 pb-16 pt-16 sm:px-6 sm:pb-20 sm:pt-20 lg:px-8 lg:pb-24 lg:pt-24">
       <div className="mx-auto max-w-7xl">
         <div className="mb-12 text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-gold">Co u nás najdete</p>
-          <h2 className="mt-3 font-serif text-3xl font-bold text-navy sm:text-4xl">Restaurace, pizza a akce</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-navy/60">{site.welcome}</p>
+          <p className="text-sm font-semibold uppercase tracking-widest text-gold">{eyebrow}</p>
+          <h2 className="mt-3 font-serif text-3xl font-bold text-navy sm:text-4xl">{title}</h2>
+          <p className="mx-auto mt-4 max-w-2xl text-navy/60">{description}</p>
         </div>
 
         <div className="flex flex-col gap-5">

@@ -22,7 +22,7 @@ const customerStatus: Record<
     hint: 'Kuchyně objednávku brzy zkontroluje. Po potvrzení vám stav zaktualizujeme.',
   },
   confirmed: {
-    label: 'Potvrzeno — peče se',
+    label: 'Potvrzeno, peče se',
     hint: 'Vaše pizzy se právě připravují. Přijďte prosím v domluvený čas.',
   },
   ready: {

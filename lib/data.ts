@@ -1,7 +1,7 @@
 export const site = {
   name: 'Na Formance',
   tagline: 'Žeravice',
-  fullName: 'Na Formance – Žeravice',
+  fullName: 'Na Formance Žeravice',
   description: 'Domácí pizza, catering a příjemné prostředí. Rodinná restaurace v Žeravicích u Kyjova.',
   welcome:
     'Jsme rodinná restaurace, která se nachází v Žeravicích u Kyjova. Máme k dispozici prostory pro pořádání jakékoliv akce. Nabízíme kompletní servis včetně cateringových služeb.',
@@ -35,8 +35,55 @@ export const site = {
 /** Google recenze — upravte rating podle aktuálního stavu v Mapách. */
 export const googleReviews = {
   rating: 4.0,
-  reviewCount: null as number | null,
+  reviewCount: 81,
 } as const;
+
+export type GoogleReviewItem = {
+  author: string;
+  rating: number;
+  text: string;
+  relativeDate: string;
+};
+
+/** Vybrané recenze z Google Maps (iniciály a texty dle veřejných hodnocení). */
+export const googleReviewItems: GoogleReviewItem[] = [
+  {
+    author: 'E. S.',
+    rating: 5,
+    text: 'Musím vyzdvihnout skvělý um vaření paní Menšíkové a její ochotu a vstřícnost. Mám bezlepkovou dietu a díky ní si užívám dovolenou i skrze jídlo. Tuto restauraci vřele doporučuji!',
+    relativeDate: 'před 5 měsíci',
+  },
+  {
+    author: 'P. C.',
+    rating: 5,
+    text: 'Vynikající jídlo. Dobrá a rychlá obsluha. Skvělé ceny.',
+    relativeDate: 'před 3 měsíci',
+  },
+  {
+    author: 'O. K.',
+    rating: 5,
+    text: 'Příjemná hospůdka, dobré jídlo, ale hlavně super personál!',
+    relativeDate: 'před 2 měsíci',
+  },
+  {
+    author: 'P. K.',
+    rating: 5,
+    text: 'Příjemná hospůdka a klidné posezení na zahrádce. Cestou na kole se tu rád zastavím a vezmu si kolo na zahrádku.',
+    relativeDate: 'před 7 měsíci',
+  },
+  {
+    author: 'J. S.',
+    rating: 5,
+    text: 'Příjemné posezení, výborné jídlo, příjemná paní servírka.',
+    relativeDate: 'před 8 měsíci',
+  },
+  {
+    author: 'P. T.',
+    rating: 4,
+    text: 'Velice příjemné posezení a dobré jídlo. Určitě se vrátíme.',
+    relativeDate: 'před 10 měsíci',
+  },
+];
 
 /** Horní info lišta — nechte null pro skrytí, nastavte objekt pro zobrazení na celém webu. */
 export type SiteAnnouncement = {
@@ -58,7 +105,7 @@ export const siteAnnouncement: SiteAnnouncement | null = null;
 
 export const homeHero = {
   image: '/hero.jpg',
-  imageAlt: 'Restaurace Na Formance v Žeravicích – pohled na budovu zvenku',
+  imageAlt: 'Restaurace Na Formance v Žeravicích, pohled na budovu zvenku',
 } as const;
 
 export const navLinks = [
@@ -94,16 +141,39 @@ export const offerIntro = {
   title: 'Naše nabídka',
   pizza: 'Specializujeme se na výrobu domácí pizzy.',
   catering:
-    'Rauty na přání — obložené mísy, mini-burgříky, řízečky, saláty a mnoho dalšího dle domluvy a přání.',
+    'Rauty na přání, obložené mísy, mini-burgříky, řízečky, saláty a mnoho dalšího dle domluvy a přání.',
 } as const;
 
 export const pizzaInfo = {
   title: 'Pizza',
   note: 'O víkendu pro Vás děláme domácí pizzu.',
-  schedule: 'Pátek – Neděle',
+  schedule: 'Pátek až neděle',
   orderLabel: 'Objednávky na čísle:',
   image: '/galerie/instagram/030_DSIuqtJjv5P.jpg',
-  imageAlt: 'Neapolská pizza z italské pece – Na Formance Žeravice',
+  imageAlt: 'Neapolská pizza z italské pece, Na Formance Žeravice',
+} as const;
+
+export const pageHeroImages = {
+  pizza: {
+    image: pizzaInfo.image,
+    imageAlt: pizzaInfo.imageAlt,
+  },
+  menu: {
+    image: '/menu-drinks.jpg',
+    imageAlt: 'Točené pivo a nápoje v restauraci Na Formance Žeravice',
+  },
+  catering: {
+    image: '/galerie/instagram/034_DQh4smpCHne.jpg',
+    imageAlt: 'Catering a raut v Na Formance Žeravice',
+  },
+  galerie: {
+    image: '/galerie/instagram/019_DUwFcvzDr3z.jpg',
+    imageAlt: 'Restaurace Na Formance Žeravice',
+  },
+  kontakt: {
+    image: homeHero.image,
+    imageAlt: homeHero.imageAlt,
+  },
 } as const;
 
 export const homePizzaFeatured = ['Margherita', 'Šunková', 'Rukolová'] as const;
@@ -115,7 +185,7 @@ export const pizzaOrderSteps = [
   },
   {
     title: 'Objednejte',
-    description: 'Online přes web nebo telefonicky — pátek až neděle.',
+    description: 'Online přes web nebo telefonicky, pátek až neděle.',
   },
   {
     title: 'Vyzvedněte u nás',
@@ -246,38 +316,38 @@ export const cateringInfo = {
   intro:
     'Máme k dispozici prostory pro pořádání jakékoliv akce. Nabízíme kompletní servis včetně cateringových služeb.',
   rauts:
-    'Rauty na přání — obložené mísy, mini-burgříky, řízečky, saláty a mnoho dalšího dle domluvy a přání.',
+    'Rauty na přání, obložené mísy, mini-burgříky, řízečky, saláty a mnoho dalšího dle domluvy a přání.',
 } as const;
 
 export const cateringEvents = [
   {
-    title: 'Oslavy narozenin',
+    title: 'Oslava narozenin',
     description: 'Rodinné oslavy v příjemném prostředí s domácí kuchyní.',
   },
   {
-    title: 'Svatby',
+    title: 'Svatba',
     description: 'Kompletní servis pro Váš svatební den včetně rautu a cateringu.',
   },
   {
-    title: 'Smuteční hostiny',
+    title: 'Smuteční hostina',
     description: 'Důstojné občerstvení v klidném prostředí.',
   },
   {
-    title: 'Firemní večírky',
+    title: 'Firemní večírek',
     description: 'Prostory pro firemní akce, večírky a setkání.',
   },
   {
-    title: 'Rauty a catering',
+    title: 'Raut a catering',
     description: 'Obložené mísy, mini-burgříky, řízečky, saláty a další dle domluvy.',
   },
 ] as const;
 
 export const cateringEventTypes = [
-  'Oslavy narozenin',
-  'Svatby',
-  'Smuteční hostiny',
-  'Firemní večírky',
-  'Rauty a catering',
+  'Oslava narozenin',
+  'Svatba',
+  'Smuteční hostina',
+  'Firemní večírek',
+  'Raut a catering',
   'Jiné',
 ] as const;
 
@@ -300,8 +370,8 @@ export const cateringMenuOptions = [
 
 export const guestCountRanges = [
   { value: 'do-30', label: 'Do 30 hostů' },
-  { value: '30-60', label: '30–60 hostů' },
-  { value: '60-100', label: '60–100 hostů' },
+  { value: '30-60', label: '30 až 60 hostů' },
+  { value: '60-100', label: '60 až 100 hostů' },
   { value: '100+', label: 'Více než 100' },
 ] as const;
 

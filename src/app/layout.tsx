@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import { Playfair_Display, Plus_Jakarta_Sans } from 'next/font/google';
+import { unstable_noStore as noStore } from 'next/cache';
 import ConditionalSiteChrome from '@/components/ConditionalSiteChrome';
 import { site } from '@/lib/data';
+import { getStore } from '@/lib/pizza-orders/store';
 import './globals.css';
 
 const playfair = Playfair_Display({
@@ -17,7 +19,7 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Rodinná restaurace v Žeravicích | Na Formance - Žeravice',
+  title: 'Rodinná restaurace v Žeravicích | Na Formance Žeravice',
   description: site.description,
   icons: {
     icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
@@ -25,11 +27,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  noStore();
+  const store = await getStore();
+
   return (
     <html lang="cs" className={`${playfair.variable} ${jakarta.variable}`}>
       <body className="min-h-screen bg-ivory font-sans text-slate-deep antialiased">
-        <ConditionalSiteChrome>{children}</ConditionalSiteChrome>
+        <ConditionalSiteChrome announcement={store.siteAnnouncement}>{children}</ConditionalSiteChrome>
       </body>
     </html>
   );

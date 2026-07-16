@@ -5,8 +5,7 @@ import Link from 'next/link';
 import { CheckCircle2, ChevronDown, ChevronUp, Clock, CreditCard, Minus, Plus, ShoppingBag, Wallet } from 'lucide-react';
 import { pizzaExtras, pizzaMenu, formatPrice, pizzaBoxPrice } from '@/lib/data';
 import { lineItemTotal, orderItemsTotal } from '@/lib/pizza-pricing';
-import type { OrderItem, PaymentMethod } from '@/lib/pizza-orders/types';
-import { getPickupSlots } from '@/lib/pizza-orders/pickup-slots';
+import type { OrderItem, OrderPageSettings, PaymentMethod } from '@/lib/pizza-orders/types';
 
 type CartLine = OrderItem & { id: string; expanded?: boolean };
 
@@ -127,29 +126,32 @@ export default function PizzaOrderForm() {
   const [remaining, setRemaining] = useState<number | null>(null);
   const [accepting, setAccepting] = useState(true);
   const [ordersOpen, setOrdersOpen] = useState(true);
+  const [orderPageOpen, setOrderPageOpen] = useState(true);
+  const [orderPage, setOrderPage] = useState<OrderPageSettings | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState<{ id: string; pickupTime: string; phone: string } | null>(null);
-  const [slots, setSlots] = useState(() => getPickupSlots());
+  const [slots, setSlots] = useState<PickupSlot[]>([]);
   const cartRef = useRef<HTMLDivElement>(null);
   const checkoutRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const refresh = () => setSlots(getPickupSlots());
+    const refresh = () => {
+      fetch('/api/pizza/orders')
+        .then((r) => r.json())
+        .then((data) => {
+          setRemaining(data.remaining);
+          setAccepting(data.acceptingOrders);
+          setOrdersOpen(data.ordersOpen ?? true);
+          setOrderPageOpen(data.orderPageOpen ?? true);
+          setOrderPage(data.orderPage ?? null);
+          setSlots(data.slots ?? []);
+        })
+        .catch(() => {});
+    };
     refresh();
     const interval = setInterval(refresh, 60_000);
     return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    fetch('/api/pizza/orders')
-      .then((r) => r.json())
-      .then((data) => {
-        setRemaining(data.remaining);
-        setAccepting(data.acceptingOrders);
-        setOrdersOpen(data.ordersOpen ?? true);
-      })
-      .catch(() => {});
   }, [success]);
 
   const addToCart = (pizzaName: string) => {
@@ -294,12 +296,14 @@ export default function PizzaOrderForm() {
     );
   }
 
-  if (!ordersOpen) {
+  if (!ordersOpen || !orderPageOpen) {
     return (
       <div className="rounded-3xl border border-slate-deep/10 bg-white p-8 text-center">
-        <p className="font-medium text-slate-deep">Online objednávky jsou dostupné pátek až neděli.</p>
+        <p className="font-medium text-slate-deep">
+          {orderPage?.closedTitle ?? 'Online objednávky jsou momentálně zavřené.'}
+        </p>
         <p className="mt-2 text-sm text-slate-deep/60">
-          Mimo víkend nás kontaktujte telefonicky.
+          {orderPage?.closedDescription ?? 'Mimo otevírací čas nás kontaktujte telefonicky.'}
         </p>
       </div>
     );
@@ -308,8 +312,12 @@ export default function PizzaOrderForm() {
   if (!accepting) {
     return (
       <div className="rounded-3xl border border-terracotta/20 bg-terracotta/5 p-8 text-center">
-        <p className="font-medium text-slate-deep">Objednávky jsou pro dnešek uzavřeny.</p>
-        <p className="mt-2 text-sm text-slate-deep/60">Kapacita kuchyně je naplněna. Zkuste to zítra.</p>
+        <p className="font-medium text-slate-deep">
+          {orderPage?.pausedTitle ?? 'Objednávky jsou pro dnešek uzavřeny.'}
+        </p>
+        <p className="mt-2 text-sm text-slate-deep/60">
+          {orderPage?.pausedDescription ?? 'Kapacita kuchyně je naplněna. Zkuste to zítra.'}
+        </p>
       </div>
     );
   }
@@ -544,8 +552,8 @@ export default function PizzaOrderForm() {
             </div>
             {paymentMethod === 'online' && (
               <p className="mt-2 text-xs text-slate-deep/50">
-                Online platba zatím funguje jako rezervace — kartou zaplatíte po napojení platební
-                brány (GoPay / Stripe). Poplatek brány je obvykle cca 1–2&nbsp;% z částky.
+                Online platba zatím funguje jako rezervace, kartou zaplatíte po napojení platební
+                brány (GoPay / Stripe). Poplatek brány je obvykle cca 1 až 2&nbsp;% z částky.
               </p>
             )}
           </div>

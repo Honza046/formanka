@@ -1,18 +1,18 @@
-import { promises as fs } from 'fs';
-import path from 'path';
 import { randomUUID } from 'crypto';
 import type {
   CreateOrderInput,
   DailyCapacity,
+  OpeningStatusSettings,
+  OrderPageSettings,
   OrderStatus,
   PizzaOrder,
   PizzaStore,
+  SiteAnnouncementSettings,
+  WebsiteContentSettings,
 } from './types';
 import { activeStatuses, pizzaCount } from './types';
-import { isOrdersOpen } from './pickup-slots';
-
-const DATA_DIR = path.join(process.cwd(), 'data');
-const STORE_FILE = path.join(DATA_DIR, 'pizza-orders.json');
+import { isOrderPageTimeOpen, isOrdersOpen } from './pickup-slots';
+import { loadStore, saveStoreData } from './persistence';
 
 const DEFAULT_MAX_PIZZAS = 40;
 
@@ -28,33 +28,130 @@ function defaultCapacity(): DailyCapacity {
   };
 }
 
+function defaultOrderPage(): OrderPageSettings {
+  return {
+    mode: 'auto',
+    manualEnabled: false,
+    title: 'Objednat pizzu',
+    description: 'O víkendu pro Vás děláme domácí pizzu. Vyberte pizzy, zadejte čas vyzvednutí a my vám objednávku potvrdíme.',
+    closedTitle: 'Objednávky jsou zavřené',
+    closedDescription: 'Online objednávky otevíráme od 17:00, nebo je může obsluha zapnout dříve v kuchyňské aplikaci.',
+    pausedTitle: 'Objednávky jsou pro dnešek uzavřeny',
+    pausedDescription: 'Kapacita kuchyně je naplněna nebo jsme příjem objednávek dočasně zastavili. Zkuste to prosím později.',
+  };
+}
+
+function defaultOpeningStatus(): OpeningStatusSettings {
+  return {
+    openLabel: 'Nyní máme otevřeno',
+    closedLabel: 'Nyní máme zavřeno',
+    opensTodayLabel: 'Otevíráme v',
+    opensAnotherDayLabel: 'Otevíráme',
+    untilLabel: 'do',
+  };
+}
+
+function defaultSiteAnnouncement(): SiteAnnouncementSettings {
+  return {
+    enabled: false,
+    message: '',
+    href: '',
+    linkLabel: '',
+    variant: 'warning',
+  };
+}
+
+function defaultWebsiteContent(): WebsiteContentSettings {
+  return {
+    home: {
+      heroEyebrow: 'Rodinná restaurace · Žeravice u Kyjova',
+      heroTitle: 'Na Formance',
+      heroDescription: 'Domácí pizza, catering a příjemné prostředí',
+      heroPrimaryCta: 'Objednat pizzu',
+      heroSecondaryCta: 'Zobrazit menu',
+      introEyebrow: 'Co u nás najdete',
+      introTitle: 'Restaurace, pizza a akce',
+      introDescription:
+        'Jsme rodinná restaurace, která se nachází v Žeravicích u Kyjova. Máme k dispozici prostory pro pořádání jakékoliv akce. Nabízíme kompletní servis včetně cateringových služeb.',
+    },
+    pizza: {
+      heroEyebrow: 'Víkendová nabídka',
+      heroTitle: 'Pizza',
+      heroDescription: 'O víkendu pro Vás děláme domácí pizzu.',
+      orderCta: 'Objednat online',
+      contactCta: 'Máte dotaz? Kontaktujte nás',
+    },
+    catering: {
+      heroEyebrow: 'Akce & oslavy',
+      heroTitle: 'Catering & akce',
+      heroDescription:
+        'Máme k dispozici prostory pro pořádání jakékoliv akce. Nabízíme kompletní servis včetně cateringových služeb.',
+      inquiryEyebrow: 'Nezávazně',
+      inquiryTitle: 'Poptat catering',
+      inquiryDescription: 'Vyplňte formulář, ozveme se s nabídkou na míru.',
+    },
+    kontakt: {
+      heroEyebrow: 'Jsme tu pro vás',
+      heroTitle: 'Kontaktujte nás',
+      heroDescription: 'Máte dotaz, chcete uspořádat akci nebo objednat pizzu? Napište nám nebo zavolejte.',
+      formEyebrow: 'Napište nám',
+    },
+  };
+}
+
 function defaultStore(): PizzaStore {
-  return { orders: [], capacity: defaultCapacity() };
+  return {
+    orders: [],
+    capacity: defaultCapacity(),
+    orderPage: defaultOrderPage(),
+    openingStatus: defaultOpeningStatus(),
+    siteAnnouncement: defaultSiteAnnouncement(),
+    websiteContent: defaultWebsiteContent(),
+  };
 }
 
 async function ensureStore(): Promise<PizzaStore> {
-  await fs.mkdir(DATA_DIR, { recursive: true });
+  const existing = await loadStore();
 
-  try {
-    const raw = await fs.readFile(STORE_FILE, 'utf-8');
-    const store = JSON.parse(raw) as PizzaStore;
-
-    if (store.capacity.date !== todayDate()) {
-      store.capacity = defaultCapacity();
-      store.orders = store.orders.filter((order) => !order.pickupTime.startsWith(todayDate()));
-    }
-
-    return store;
-  } catch {
+  if (!existing) {
     const store = defaultStore();
-    await saveStore(store);
+    await saveStoreData(store);
     return store;
   }
-}
 
-async function saveStore(store: PizzaStore): Promise<void> {
-  await fs.mkdir(DATA_DIR, { recursive: true });
-  await fs.writeFile(STORE_FILE, JSON.stringify(store, null, 2), 'utf-8');
+  if (existing.capacity.date !== todayDate()) {
+    existing.capacity = defaultCapacity();
+    existing.orders = existing.orders.filter((order) => !order.pickupTime.startsWith(todayDate()));
+    await saveStoreData(existing);
+  }
+
+  const nextOrderPage = { ...defaultOrderPage(), ...existing.orderPage };
+  const nextOpeningStatus = { ...defaultOpeningStatus(), ...existing.openingStatus };
+  const nextSiteAnnouncement = { ...defaultSiteAnnouncement(), ...existing.siteAnnouncement };
+  const nextWebsiteContent = {
+    ...defaultWebsiteContent(),
+    ...existing.websiteContent,
+    home: { ...defaultWebsiteContent().home, ...existing.websiteContent?.home },
+    pizza: { ...defaultWebsiteContent().pizza, ...existing.websiteContent?.pizza },
+    catering: { ...defaultWebsiteContent().catering, ...existing.websiteContent?.catering },
+    kontakt: { ...defaultWebsiteContent().kontakt, ...existing.websiteContent?.kontakt },
+  };
+
+  const needsSave =
+    JSON.stringify(nextOrderPage) !== JSON.stringify(existing.orderPage) ||
+    JSON.stringify(nextOpeningStatus) !== JSON.stringify(existing.openingStatus) ||
+    JSON.stringify(nextSiteAnnouncement) !== JSON.stringify(existing.siteAnnouncement) ||
+    JSON.stringify(nextWebsiteContent) !== JSON.stringify(existing.websiteContent);
+
+  if (needsSave) {
+    existing.orderPage = nextOrderPage;
+    existing.openingStatus = nextOpeningStatus;
+    existing.siteAnnouncement = nextSiteAnnouncement;
+    existing.websiteContent = nextWebsiteContent;
+    await saveStoreData(existing);
+  }
+
+  return existing;
 }
 
 export function reservedPizzas(orders: PizzaOrder[], date = todayDate()): number {
@@ -78,6 +175,13 @@ export async function getStore(): Promise<PizzaStore & { remaining: number }> {
 
 export async function createOrder(input: CreateOrderInput): Promise<PizzaOrder> {
   const store = await ensureStore();
+
+  const orderPageOpen =
+    store.orderPage.mode === 'manual' ? store.orderPage.manualEnabled : isOrderPageTimeOpen();
+
+  if (!orderPageOpen) {
+    throw new Error(store.orderPage.closedTitle);
+  }
 
   if (!isOrdersOpen()) {
     throw new Error('Online objednávky jsou dostupné pouze pátek až neděli.');
@@ -110,7 +214,7 @@ export async function createOrder(input: CreateOrderInput): Promise<PizzaOrder> 
   };
 
   store.orders.unshift(order);
-  await saveStore(store);
+  await saveStoreData(store);
   return order;
 }
 
@@ -131,7 +235,7 @@ export async function updateOrderStatus(
   }
 
   order.status = status;
-  await saveStore(store);
+  await saveStoreData(store);
   return order;
 }
 
@@ -147,8 +251,80 @@ export async function updateCapacity(
     store.capacity.acceptingOrders = updates.acceptingOrders;
   }
 
-  await saveStore(store);
+  await saveStoreData(store);
   return store.capacity;
+}
+
+export async function updateOrderPage(
+  updates: Partial<OrderPageSettings>,
+): Promise<OrderPageSettings> {
+  const store = await ensureStore();
+  store.orderPage = {
+    ...defaultOrderPage(),
+    ...store.orderPage,
+    ...updates,
+  };
+  await saveStoreData(store);
+  return store.orderPage;
+}
+
+export async function updateOpeningStatus(
+  updates: Partial<OpeningStatusSettings>,
+): Promise<OpeningStatusSettings> {
+  const store = await ensureStore();
+  store.openingStatus = {
+    ...defaultOpeningStatus(),
+    ...store.openingStatus,
+    ...updates,
+  };
+  await saveStoreData(store);
+  return store.openingStatus;
+}
+
+export async function updateSiteAnnouncement(
+  updates: Partial<SiteAnnouncementSettings>,
+): Promise<SiteAnnouncementSettings> {
+  const store = await ensureStore();
+  store.siteAnnouncement = {
+    ...defaultSiteAnnouncement(),
+    ...store.siteAnnouncement,
+    ...updates,
+  };
+  await saveStoreData(store);
+  return store.siteAnnouncement;
+}
+
+export async function updateWebsiteContent(
+  updates: Partial<WebsiteContentSettings>,
+): Promise<WebsiteContentSettings> {
+  const store = await ensureStore();
+  store.websiteContent = {
+    ...defaultWebsiteContent(),
+    ...store.websiteContent,
+    ...updates,
+    home: {
+      ...defaultWebsiteContent().home,
+      ...store.websiteContent?.home,
+      ...updates.home,
+    },
+    pizza: {
+      ...defaultWebsiteContent().pizza,
+      ...store.websiteContent?.pizza,
+      ...updates.pizza,
+    },
+    catering: {
+      ...defaultWebsiteContent().catering,
+      ...store.websiteContent?.catering,
+      ...updates.catering,
+    },
+    kontakt: {
+      ...defaultWebsiteContent().kontakt,
+      ...store.websiteContent?.kontakt,
+      ...updates.kontakt,
+    },
+  };
+  await saveStoreData(store);
+  return store.websiteContent;
 }
 
 export async function getTodayOrders(): Promise<PizzaOrder[]> {

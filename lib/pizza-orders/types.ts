@@ -43,9 +43,74 @@ export type DailyCapacity = {
   acceptingOrders: boolean;
 };
 
+export type OrderPageSettings = {
+  mode: 'auto' | 'manual';
+  manualEnabled: boolean;
+  title: string;
+  description: string;
+  closedTitle: string;
+  closedDescription: string;
+  pausedTitle: string;
+  pausedDescription: string;
+};
+
+export type OpeningStatusSettings = {
+  openLabel: string;
+  closedLabel: string;
+  opensTodayLabel: string;
+  opensAnotherDayLabel: string;
+  untilLabel: string;
+};
+
+export type SiteAnnouncementSettings = {
+  enabled: boolean;
+  message: string;
+  href: string;
+  linkLabel: string;
+  variant: 'info' | 'warning' | 'important';
+};
+
+export type WebsiteContentSettings = {
+  home: {
+    heroEyebrow: string;
+    heroTitle: string;
+    heroDescription: string;
+    heroPrimaryCta: string;
+    heroSecondaryCta: string;
+    introEyebrow: string;
+    introTitle: string;
+    introDescription: string;
+  };
+  pizza: {
+    heroEyebrow: string;
+    heroTitle: string;
+    heroDescription: string;
+    orderCta: string;
+    contactCta: string;
+  };
+  catering: {
+    heroEyebrow: string;
+    heroTitle: string;
+    heroDescription: string;
+    inquiryEyebrow: string;
+    inquiryTitle: string;
+    inquiryDescription: string;
+  };
+  kontakt: {
+    heroEyebrow: string;
+    heroTitle: string;
+    heroDescription: string;
+    formEyebrow: string;
+  };
+};
+
 export type PizzaStore = {
   orders: PizzaOrder[];
   capacity: DailyCapacity;
+  orderPage: OrderPageSettings;
+  openingStatus: OpeningStatusSettings;
+  siteAnnouncement: SiteAnnouncementSettings;
+  websiteContent: WebsiteContentSettings;
 };
 
 export type CreateOrderInput = {

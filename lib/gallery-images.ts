@@ -67,6 +67,10 @@ export function mixedCarouselImages(): GalleryImage[] {
   return mixed;
 }
 
+export function cateringSpotlightImages(): GalleryImage[] {
+  return uniqueByShortcode(galleryCatering).slice(0, 3);
+}
+
 export function galleryAlt(alt: string): string {
   return alt.split('\n')[0].trim() || 'Na Formance Žeravice';
 }

@@ -1,23 +1,31 @@
 import type { Metadata } from 'next';
+import { unstable_noStore as noStore } from 'next/cache';
 import Link from 'next/link';
 import { ArrowRight, Phone, Pizza } from 'lucide-react';
 import PageHero from '@/components/PageHero';
 import PizzaMenuCard from '@/components/PizzaMenuCard';
-import { pizzaInfo, site, formatPrice, pizzaExtras, pizzaBoxPrice } from '@/lib/data';
+import { pizzaInfo, site, formatPrice, pizzaExtras, pizzaBoxPrice, pageHeroImages } from '@/lib/data';
 import { pizzaGallerySlots } from '@/lib/pizza-gallery';
+import { getStore } from '@/lib/pizza-orders/store';
 
 export const metadata: Metadata = {
-  title: 'Pizza | Na Formance - Žeravice',
+  title: 'Pizza | Na Formance Žeravice',
   description: 'Domácí pizza v Žeravicích. Objednávky pátek až neděle.',
 };
 
-export default function PizzaPage() {
+export default async function PizzaPage() {
+  noStore();
+  const store = await getStore();
+  const content = store.websiteContent.pizza;
+
   return (
     <main>
       <PageHero
-        eyebrow="Víkendová nabídka"
-        title={pizzaInfo.title}
-        description={pizzaInfo.note}
+        eyebrow={content.heroEyebrow}
+        title={content.heroTitle}
+        description={content.heroDescription}
+        image={pageHeroImages.pizza.image}
+        imageAlt={pageHeroImages.pizza.imageAlt}
       >
         <p className="mt-2 text-sm font-semibold uppercase tracking-wider text-forest">
           {pizzaInfo.schedule}
@@ -73,7 +81,7 @@ export default function PizzaPage() {
               className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-forest px-6 py-4 text-sm font-semibold text-ivory transition-colors hover:bg-forest-light"
             >
               <Pizza className="h-5 w-5" />
-              Objednat online
+              {content.orderCta}
             </Link>
             <div className="grid gap-4 sm:grid-cols-2">
               {site.phones.map((phone) => (
@@ -94,7 +102,7 @@ export default function PizzaPage() {
               href="/kontakt"
               className="inline-flex items-center gap-2 text-sm font-semibold text-forest hover:gap-3"
             >
-              Máte dotaz? Kontaktujte nás
+              {content.contactCta}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>

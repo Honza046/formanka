@@ -3,7 +3,7 @@ import KitchenDashboard from '@/components/KitchenDashboard';
 
 export const metadata: Metadata = {
   title: 'Kuchyně | Na Formance',
-  description: 'Aplikace pro pizzera — správa objednávek.',
+  description: 'Aplikace pro pizzera, správa objednávek.',
   robots: 'noindex, nofollow',
   appleWebApp: {
     capable: true,
