@@ -18,12 +18,41 @@ const jakarta = Plus_Jakarta_Sans({
   display: 'swap',
 });
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : 'https://formanka.vercel.app');
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: 'Rodinná restaurace v Žeravicích | Na Formance Žeravice',
   description: site.description,
   icons: {
     icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
     apple: [{ url: '/icon.svg', type: 'image/svg+xml' }],
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'cs_CZ',
+    siteName: site.fullName,
+    title: 'Na Formance Žeravice',
+    description: site.description,
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Restaurace Na Formance v Žeravicích',
+        type: 'image/jpeg',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Na Formance Žeravice',
+    description: site.description,
+    images: ['/og-image.jpg'],
   },
 };
 
