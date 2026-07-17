@@ -26,6 +26,7 @@ export default async function PizzaPage() {
         description={content.heroDescription}
         image={pageHeroImages.pizza.image}
         imageAlt={pageHeroImages.pizza.imageAlt}
+        imagePosition="center"
       >
         <p className="mt-2 text-sm font-semibold uppercase tracking-wider text-forest">
           {pizzaInfo.schedule}

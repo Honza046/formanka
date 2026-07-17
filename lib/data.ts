@@ -163,16 +163,16 @@ export const pageHeroImages = {
     imageAlt: 'Točené pivo a nápoje v restauraci Na Formance Žeravice',
   },
   catering: {
-    image: '/galerie/instagram/034_DQh4smpCHne.jpg',
-    imageAlt: 'Catering a raut v Na Formance Žeravice',
+    image: '/galerie/instagram/007_DF_Ea5aq8iG_1.jpg',
+    imageAlt: 'Mini burgery a raut v Na Formance Žeravice',
   },
   galerie: {
-    image: '/galerie/instagram/019_DUwFcvzDr3z.jpg',
-    imageAlt: 'Restaurace Na Formance Žeravice',
+    image: '/galerie/instagram/016_DW014iKiBLn.jpg',
+    imageAlt: 'Dezerty a raut v Na Formance Žeravice',
   },
   kontakt: {
-    image: homeHero.image,
-    imageAlt: homeHero.imageAlt,
+    image: '/galerie/instagram/006_DF_Ea5aq8iG.jpg',
+    imageAlt: 'Cateringové občerstvení Na Formance Žeravice',
   },
 } as const;
 

@@ -26,6 +26,7 @@ export default async function CateringPage() {
         description={content.heroDescription}
         image={pageHeroImages.catering.image}
         imageAlt={pageHeroImages.catering.imageAlt}
+        imagePosition="right"
       />
 
       <section className="px-4 py-10 sm:px-6 sm:py-14 lg:px-8">

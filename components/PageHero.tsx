@@ -113,15 +113,15 @@ export default function PageHero({
             priority
             sizes="100vw"
             className={`object-cover ${
-              imagePosition === 'right' ? 'object-[center_40%] sm:object-right' : 'object-center'
+              imagePosition === 'right' ? 'object-[center_35%] sm:object-[75%_40%]' : 'object-center'
             }`}
           />
           <div
-            className="absolute inset-0 bg-gradient-to-r from-ivory via-ivory/95 to-ivory/50 sm:to-ivory/30"
+            className="absolute inset-0 bg-gradient-to-r from-ivory via-ivory/92 to-ivory/45 sm:via-ivory/70 sm:to-ivory/15"
             aria-hidden
           />
           <div
-            className="absolute inset-0 bg-gradient-to-t from-ivory via-ivory/75 to-ivory/20"
+            className="absolute inset-0 bg-gradient-to-t from-ivory via-ivory/55 to-transparent"
             aria-hidden
           />
         </>

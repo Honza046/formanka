@@ -17,6 +17,7 @@ export default function GaleriePage() {
         description="Restaurace, zahrádka a akce, které u nás pořádáme."
         image={pageHeroImages.galerie.image}
         imageAlt={pageHeroImages.galerie.imageAlt}
+        imagePosition="right"
       />
       <GalerieSection hideHeader />
     </main>
