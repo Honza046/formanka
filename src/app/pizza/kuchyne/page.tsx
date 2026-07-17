@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import KitchenDashboard from '@/components/KitchenDashboard';
+import KitchenServiceWorker from '@/components/KitchenServiceWorker';
 
 export const metadata: Metadata = {
   title: 'Kuchyně | Na Formance',
@@ -19,6 +20,9 @@ export const metadata: Metadata = {
     title: 'Kuchyně',
     statusBarStyle: 'black-translucent',
   },
+  other: {
+    'mobile-web-app-capable': 'yes',
+  },
   openGraph: {
     title: 'Kuchyně | Na Formance',
     description: 'Aplikace pro pizzera, správa objednávek.',
@@ -32,11 +36,13 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  viewportFit: 'cover',
 };
 
 export default function KitchenPage() {
   return (
     <main className="min-h-screen bg-ivory">
+      <KitchenServiceWorker />
       <KitchenDashboard />
     </main>
   );

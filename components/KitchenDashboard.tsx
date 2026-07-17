@@ -14,6 +14,7 @@ import {
   Plus,
   RefreshCw,
 } from 'lucide-react';
+import InstallKitchenApp from '@/components/InstallKitchenApp';
 import OpeningStatusPill from '@/components/OpeningStatusPill';
 import SiteLogo from '@/components/SiteLogo';
 import type {
@@ -370,9 +371,9 @@ export default function KitchenDashboard() {
               </button>
             </form>
           </div>
-          <p className="mt-6 text-center text-xs text-navy/40">
-            Přidejte si stránku na plochu telefonu pro rychlý přístup.
-          </p>
+          <div className="mt-4">
+            <InstallKitchenApp variant="card" />
+          </div>
         </div>
       </div>
     );
@@ -393,6 +394,9 @@ export default function KitchenDashboard() {
     <div className="mx-auto flex min-h-screen max-w-lg flex-col bg-ivory">
       <header className="sticky top-0 z-20 border-b border-navy/5 bg-ivory/95 backdrop-blur-md">
         <div className="px-4 pb-3 pt-4">
+          <div className="mb-3">
+            <InstallKitchenApp variant="banner" />
+          </div>
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <SiteLogo size="sm" />
