@@ -11,6 +11,7 @@ export type OpeningStatus = {
 };
 
 const defaultSettings: OpeningStatusSettings = {
+  mode: 'auto',
   openLabel: 'Nyní máme otevřeno',
   closedLabel: 'Nyní máme zavřeno',
   opensTodayLabel: 'Otevíráme v',
@@ -92,34 +93,17 @@ function buildSchedule(): DaySchedule[] {
 
 const schedule = buildSchedule();
 
-export function getOpeningStatus(
-  now = new Date(),
-  settings: Partial<OpeningStatusSettings> = {},
-): OpeningStatus {
-  const labels = { ...defaultSettings, ...settings };
-  const { dayIndex, nowMinutes } = getPragueClock(now);
-
+function findNextOpening(
+  dayIndex: number,
+  nowMinutes: number,
+): { dayIndex: number; openLabel: string; opensLaterToday: boolean } | null {
   const today = schedule.find((entry) => entry.dayIndex === dayIndex);
-
-  if (today) {
-    if (nowMinutes >= today.openMinutes && nowMinutes < today.closeMinutes) {
-      return {
-        isOpen: true,
-        opensLaterToday: false,
-        variant: 'open',
-        message: `${labels.openLabel} · ${labels.untilLabel} ${today.closeLabel}`,
-      };
-    }
-
-    if (nowMinutes < today.openMinutes) {
-      return {
-        isOpen: false,
-        opensLaterToday: true,
-        variant: 'soon',
-        message: labels.closedLabel,
-        alternateMessage: `${labels.opensTodayLabel} ${today.openLabel}`,
-      };
-    }
+  if (today && nowMinutes < today.openMinutes) {
+    return {
+      dayIndex,
+      openLabel: today.openLabel,
+      opensLaterToday: true,
+    };
   }
 
   for (let offset = 1; offset <= 7; offset += 1) {
@@ -128,11 +112,39 @@ export function getOpeningStatus(
     if (!next) continue;
 
     return {
+      dayIndex: nextIndex,
+      openLabel: next.openLabel,
+      opensLaterToday: false,
+    };
+  }
+
+  return null;
+}
+
+function closedStatus(
+  labels: OpeningStatusSettings,
+  dayIndex: number,
+  nowMinutes: number,
+): OpeningStatus {
+  const next = findNextOpening(dayIndex, nowMinutes);
+
+  if (next?.opensLaterToday) {
+    return {
+      isOpen: false,
+      opensLaterToday: true,
+      variant: 'soon',
+      message: labels.closedLabel,
+      alternateMessage: `${labels.opensTodayLabel} ${next.openLabel}`,
+    };
+  }
+
+  if (next) {
+    return {
       isOpen: false,
       opensLaterToday: false,
       variant: 'closed',
       message: labels.closedLabel,
-      alternateMessage: `${labels.opensAnotherDayLabel} ${INDEX_TO_DAY_SHORT[nextIndex]} ${next.openLabel}`,
+      alternateMessage: `${labels.opensAnotherDayLabel} ${INDEX_TO_DAY_SHORT[next.dayIndex]} ${next.openLabel}`,
     };
   }
 
@@ -142,4 +154,43 @@ export function getOpeningStatus(
     variant: 'closed',
     message: labels.closedLabel,
   };
+}
+
+function openStatus(labels: OpeningStatusSettings, today: DaySchedule | undefined): OpeningStatus {
+  const until = today ? ` · ${labels.untilLabel} ${today.closeLabel}` : '';
+  return {
+    isOpen: true,
+    opensLaterToday: false,
+    variant: 'open',
+    message: `${labels.openLabel}${until}`,
+  };
+}
+
+export function getOpeningStatus(
+  now = new Date(),
+  settings: Partial<OpeningStatusSettings> = {},
+): OpeningStatus {
+  const labels = { ...defaultSettings, ...settings };
+  const { dayIndex, nowMinutes } = getPragueClock(now);
+  const today = schedule.find((entry) => entry.dayIndex === dayIndex);
+
+  if (labels.mode === 'open') {
+    return openStatus(labels, today);
+  }
+
+  if (labels.mode === 'closed') {
+    return closedStatus(labels, dayIndex, nowMinutes);
+  }
+
+  if (today) {
+    if (nowMinutes >= today.openMinutes && nowMinutes < today.closeMinutes) {
+      return openStatus(labels, today);
+    }
+
+    if (nowMinutes < today.openMinutes) {
+      return closedStatus(labels, dayIndex, nowMinutes);
+    }
+  }
+
+  return closedStatus(labels, dayIndex, nowMinutes);
 }

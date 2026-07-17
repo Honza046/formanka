@@ -54,7 +54,11 @@ export type OrderPageSettings = {
   pausedDescription: string;
 };
 
+export type OpeningStatusMode = 'auto' | 'open' | 'closed';
+
 export type OpeningStatusSettings = {
+  /** auto = podle otevírací doby; open/closed = ruční přepsání na webu */
+  mode: OpeningStatusMode;
   openLabel: string;
   closedLabel: string;
   opensTodayLabel: string;

@@ -3,10 +3,15 @@ import { Facebook, Instagram, Mail, MapPin, Phone } from 'lucide-react';
 import SiteLogo from '@/components/SiteLogo';
 import { getOpeningStatus } from '@/lib/opening-status';
 import { openingHours, site } from '@/lib/data';
+import type { OpeningStatusSettings } from '@/lib/pizza-orders/types';
 
-export default function Footer() {
+export default function Footer({
+  openingStatusSettings,
+}: {
+  openingStatusSettings?: Partial<OpeningStatusSettings>;
+}) {
   const year = new Date().getFullYear();
-  const status = getOpeningStatus();
+  const status = getOpeningStatus(new Date(), openingStatusSettings);
   const openDays = openingHours.filter((entry) => entry.hours !== 'Zavřeno');
 
   return (

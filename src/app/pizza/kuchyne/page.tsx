@@ -5,10 +5,24 @@ export const metadata: Metadata = {
   title: 'Kuchyně | Na Formance',
   description: 'Aplikace pro pizzera, správa objednávek.',
   robots: 'noindex, nofollow',
+  applicationName: 'Kuchyně Na Formance',
+  manifest: '/kitchen.webmanifest',
+  icons: {
+    icon: [
+      { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
+      { url: '/logo.jpg', type: 'image/jpeg', sizes: '984x984' },
+    ],
+    apple: [{ url: '/apple-icon.png', type: 'image/png', sizes: '180x180' }],
+  },
   appleWebApp: {
     capable: true,
     title: 'Kuchyně',
     statusBarStyle: 'black-translucent',
+  },
+  openGraph: {
+    title: 'Kuchyně | Na Formance',
+    description: 'Aplikace pro pizzera, správa objednávek.',
+    images: [{ url: '/logo.jpg', width: 984, height: 984, alt: 'Na Formance' }],
   },
 };
 

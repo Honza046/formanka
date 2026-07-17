@@ -1,0 +1,30 @@
+{
+  "name": "Kuchyně Na Formance",
+  "short_name": "Kuchyně",
+  "description": "Správa pizza objednávek",
+  "start_url": "/pizza/kuchyne",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F7F3EA",
+  "theme_color": "#283040",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.jpg",
+      "sizes": "984x984",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}

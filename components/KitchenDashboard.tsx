@@ -14,18 +14,25 @@ import {
   Plus,
   RefreshCw,
 } from 'lucide-react';
+import OpeningStatusPill from '@/components/OpeningStatusPill';
 import SiteLogo from '@/components/SiteLogo';
 import type {
+  OpeningStatusMode,
   OpeningStatusSettings,
-  OrderPageSettings,
   OrderStatus,
   PizzaOrder,
   SiteAnnouncementSettings,
-  WebsiteContentSettings,
 } from '@/lib/pizza-orders/types';
 import { paymentMethodLabels } from '@/lib/pizza-orders/types';
 import { formatPrice } from '@/lib/data';
+import { getOpeningStatus } from '@/lib/opening-status';
 import { lineItemTotal } from '@/lib/pizza-pricing';
+
+const openingModeLabels: Record<OpeningStatusMode, string> = {
+  auto: 'Podle otevírací doby',
+  open: 'Vynutit otevřeno',
+  closed: 'Vynutit zavřeno',
+};
 
 const statusLabels: Record<OrderStatus, string> = {
   pending: 'Nová',
@@ -134,17 +141,8 @@ export default function KitchenDashboard() {
   const [maxPizzas, setMaxPizzas] = useState(40);
   const [remaining, setRemaining] = useState(0);
   const [accepting, setAccepting] = useState(true);
-  const [orderPage, setOrderPage] = useState<OrderPageSettings>({
-    mode: 'auto',
-    manualEnabled: false,
-    title: 'Objednat pizzu',
-    description: 'O víkendu pro Vás děláme domácí pizzu. Vyberte pizzy, zadejte čas vyzvednutí a my vám objednávku potvrdíme.',
-    closedTitle: 'Objednávky jsou zavřené',
-    closedDescription: 'Online objednávky otevíráme od 17:00, nebo je může obsluha zapnout dříve v kuchyňské aplikaci.',
-    pausedTitle: 'Objednávky jsou pro dnešek uzavřeny',
-    pausedDescription: 'Kapacita kuchyně je naplněna nebo jsme příjem objednávek dočasně zastavili. Zkuste to prosím později.',
-  });
   const [openingStatus, setOpeningStatus] = useState<OpeningStatusSettings>({
+    mode: 'auto',
     openLabel: 'Nyní máme otevřeno',
     closedLabel: 'Nyní máme zavřeno',
     opensTodayLabel: 'Otevíráme v',
@@ -158,54 +156,14 @@ export default function KitchenDashboard() {
     linkLabel: '',
     variant: 'warning',
   });
-  const [websiteContent, setWebsiteContent] = useState<WebsiteContentSettings>({
-    home: {
-      heroEyebrow: 'Rodinná restaurace · Žeravice u Kyjova',
-      heroTitle: 'Na Formance',
-      heroDescription: 'Domácí pizza, catering a příjemné prostředí',
-      heroPrimaryCta: 'Objednat pizzu',
-      heroSecondaryCta: 'Zobrazit menu',
-      introEyebrow: 'Co u nás najdete',
-      introTitle: 'Restaurace, pizza a akce',
-      introDescription:
-        'Jsme rodinná restaurace, která se nachází v Žeravicích u Kyjova. Máme k dispozici prostory pro pořádání jakékoliv akce. Nabízíme kompletní servis včetně cateringových služeb.',
-    },
-    pizza: {
-      heroEyebrow: 'Víkendová nabídka',
-      heroTitle: 'Pizza',
-      heroDescription: 'O víkendu pro Vás děláme domácí pizzu.',
-      orderCta: 'Objednat online',
-      contactCta: 'Máte dotaz? Kontaktujte nás',
-    },
-    catering: {
-      heroEyebrow: 'Akce & oslavy',
-      heroTitle: 'Catering & akce',
-      heroDescription:
-        'Máme k dispozici prostory pro pořádání jakékoliv akce. Nabízíme kompletní servis včetně cateringových služeb.',
-      inquiryEyebrow: 'Nezávazně',
-      inquiryTitle: 'Poptat catering',
-      inquiryDescription: 'Vyplňte formulář, ozveme se s nabídkou na míru.',
-    },
-    kontakt: {
-      heroEyebrow: 'Jsme tu pro vás',
-      heroTitle: 'Kontaktujte nás',
-      heroDescription: 'Máte dotaz, chcete uspořádat akci nebo objednat pizzu? Napište nám nebo zavolejte.',
-      formEyebrow: 'Napište nám',
-    },
-  });
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState('');
   const [showDone, setShowDone] = useState(false);
   const [activeTab, setActiveTab] = useState<KitchenTab>('orders');
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     'pizza-capacity': true,
-    'pizza-order-page': false,
-    'web-pill': true,
-    'web-banner': false,
-    'web-home': false,
-    'web-pizza-page': false,
-    'web-catering': false,
-    'web-kontakt': false,
+    'web-banner': true,
+    'web-pill': false,
   });
   const knownPendingRef = useRef<Set<string>>(new Set());
 
@@ -245,17 +203,8 @@ export default function KitchenDashboard() {
       setMaxPizzas(capData.capacity?.maxPizzas ?? 40);
       setRemaining(capData.remaining ?? 0);
       setAccepting(capData.capacity?.acceptingOrders ?? true);
-      setOrderPage((prev) => ({ ...prev, ...(capData.orderPage ?? {}) }));
       setOpeningStatus((prev) => ({ ...prev, ...(capData.openingStatus ?? {}) }));
       setSiteAnnouncement((prev) => ({ ...prev, ...(capData.siteAnnouncement ?? {}) }));
-      setWebsiteContent((prev) => ({
-        ...prev,
-        ...(capData.websiteContent ?? {}),
-        home: { ...prev.home, ...(capData.websiteContent?.home ?? {}) },
-        pizza: { ...prev.pizza, ...(capData.websiteContent?.pizza ?? {}) },
-        catering: { ...prev.catering, ...(capData.websiteContent?.catering ?? {}) },
-        kontakt: { ...prev.kontakt, ...(capData.websiteContent?.kontakt ?? {}) },
-      }));
       setAuthenticated(true);
     } catch {
       /* ignore */
@@ -344,27 +293,6 @@ export default function KitchenDashboard() {
     await fetchData();
   };
 
-  const saveOrderPage = async (updates?: Partial<OrderPageSettings>) => {
-    const nextOrderPage = { ...orderPage, ...(updates ?? {}) };
-    setLoading(true);
-    setToast('');
-    try {
-      const res = await fetch('/api/pizza/capacity', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderPage: nextOrderPage }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? 'Uložení se nezdařilo');
-      setOrderPage((prev) => ({ ...prev, ...(data.orderPage ?? nextOrderPage) }));
-      setToast('Nastavení webu uloženo');
-    } catch (err) {
-      setToast(err instanceof Error ? err.message : 'Uložení se nezdařilo');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const saveOpeningStatus = async () => {
     setLoading(true);
     setToast('');
@@ -377,7 +305,7 @@ export default function KitchenDashboard() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Uložení se nezdařilo');
       setOpeningStatus((prev) => ({ ...prev, ...(data.openingStatus ?? {}) }));
-      setToast('Texty pilulky uloženy');
+      setToast('Stavová pilulka uložena');
     } catch (err) {
       setToast(err instanceof Error ? err.message : 'Uložení se nezdařilo');
     } finally {
@@ -398,33 +326,6 @@ export default function KitchenDashboard() {
       if (!res.ok) throw new Error(data.error ?? 'Uložení se nezdařilo');
       setSiteAnnouncement((prev) => ({ ...prev, ...(data.siteAnnouncement ?? {}) }));
       setToast('Horní lišta uložena');
-    } catch (err) {
-      setToast(err instanceof Error ? err.message : 'Uložení se nezdařilo');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const saveWebsiteContent = async () => {
-    setLoading(true);
-    setToast('');
-    try {
-      const res = await fetch('/api/pizza/capacity', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ websiteContent }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? 'Uložení se nezdařilo');
-      setWebsiteContent((prev) => ({
-        ...prev,
-        ...(data.websiteContent ?? {}),
-        home: { ...prev.home, ...(data.websiteContent?.home ?? {}) },
-        pizza: { ...prev.pizza, ...(data.websiteContent?.pizza ?? {}) },
-        catering: { ...prev.catering, ...(data.websiteContent?.catering ?? {}) },
-        kontakt: { ...prev.kontakt, ...(data.websiteContent?.kontakt ?? {}) },
-      }));
-      setToast('Web texty uloženy');
     } catch (err) {
       setToast(err instanceof Error ? err.message : 'Uložení se nezdařilo');
     } finally {
@@ -806,208 +707,11 @@ export default function KitchenDashboard() {
                 {accepting ? 'Přijímáme objednávky' : 'Objednávky pozastaveny'}
               </button>
             </KitchenAccordion>
-
-            <KitchenAccordion
-              title="Objednávková stránka"
-              subtitle={
-                orderPage.mode === 'manual'
-                  ? orderPage.manualEnabled
-                    ? 'Ručně zapnuto'
-                    : 'Ručně vypnuto'
-                  : 'Auto od 17:00'
-              }
-              open={openSections['pizza-order-page']}
-              onToggle={() => toggleSection('pizza-order-page')}
-            >
-              <div className="rounded-2xl bg-cream px-3 py-2 text-sm text-navy/65">
-                {orderPage.mode === 'manual'
-                  ? orderPage.manualEnabled
-                    ? 'Web objednávek je právě ručně zapnutý.'
-                    : 'Web objednávek je právě ručně vypnutý.'
-                  : 'Web objednávek běží automaticky podle času. Přijetí objednávek můžete také pozastavit.'}
-              </div>
-
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  disabled={loading}
-                  onClick={() => saveOrderPage({ mode: 'auto' })}
-                  className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
-                    orderPage.mode === 'auto'
-                      ? 'bg-navy text-ivory'
-                      : 'border border-navy/10 bg-cream text-navy'
-                  }`}
-                >
-                  Auto od 17:00
-                </button>
-                <button
-                  type="button"
-                  disabled={loading}
-                  onClick={() => saveOrderPage({ mode: 'manual' })}
-                  className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
-                    orderPage.mode === 'manual'
-                      ? 'bg-navy text-ivory'
-                      : 'border border-navy/10 bg-cream text-navy'
-                  }`}
-                >
-                  Ruční režim
-                </button>
-              </div>
-
-              {orderPage.mode === 'manual' && (
-                <button
-                  type="button"
-                  disabled={loading}
-                  onClick={() => saveOrderPage({ manualEnabled: !orderPage.manualEnabled })}
-                  className={`mt-3 w-full rounded-2xl py-3 text-sm font-semibold transition ${
-                    orderPage.manualEnabled
-                      ? 'bg-forest text-ivory hover:bg-forest-light'
-                      : 'bg-terracotta/15 text-terracotta ring-1 ring-terracotta/30'
-                  }`}
-                >
-                  {orderPage.manualEnabled ? 'Stránka je zapnutá' : 'Stránka je vypnutá'}
-                </button>
-              )}
-
-              <div className="mt-4 space-y-3">
-                <div>
-                  <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-navy/45">
-                    Nadpis stránky
-                  </label>
-                  <input
-                    type="text"
-                    value={orderPage.title}
-                    onChange={(e) => setOrderPage((prev) => ({ ...prev, title: e.target.value }))}
-                    className="w-full rounded-2xl border border-navy/10 bg-cream px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-navy/45">
-                    Popis stránky
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={orderPage.description}
-                    onChange={(e) => setOrderPage((prev) => ({ ...prev, description: e.target.value }))}
-                    className="w-full rounded-2xl border border-navy/10 bg-cream px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-navy/45">
-                    Nadpis při zavření
-                  </label>
-                  <input
-                    type="text"
-                    value={orderPage.closedTitle}
-                    onChange={(e) => setOrderPage((prev) => ({ ...prev, closedTitle: e.target.value }))}
-                    className="w-full rounded-2xl border border-navy/10 bg-cream px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-navy/45">
-                    Text při zavření
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={orderPage.closedDescription}
-                    onChange={(e) => setOrderPage((prev) => ({ ...prev, closedDescription: e.target.value }))}
-                    className="w-full rounded-2xl border border-navy/10 bg-cream px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-navy/45">
-                    Nadpis při pozastavení objednávek
-                  </label>
-                  <input
-                    type="text"
-                    value={orderPage.pausedTitle}
-                    onChange={(e) => setOrderPage((prev) => ({ ...prev, pausedTitle: e.target.value }))}
-                    className="w-full rounded-2xl border border-navy/10 bg-cream px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-navy/45">
-                    Text při pozastavení objednávek
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={orderPage.pausedDescription}
-                    onChange={(e) => setOrderPage((prev) => ({ ...prev, pausedDescription: e.target.value }))}
-                    className="w-full rounded-2xl border border-navy/10 bg-cream px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                  />
-                </div>
-                <button
-                  type="button"
-                  disabled={loading}
-                  onClick={() => saveOrderPage()}
-                  className="w-full rounded-2xl bg-gold py-3 text-sm font-semibold text-navy transition hover:bg-gold-light disabled:opacity-50"
-                >
-                  Uložit nastavení pizzy
-                </button>
-              </div>
-            </KitchenAccordion>
           </div>
         )}
 
         {activeTab === 'web' && (
           <div className="space-y-3">
-            <KitchenAccordion
-              title="Stavová pilulka"
-              subtitle={openingStatus.closedLabel}
-              open={openSections['web-pill']}
-              onToggle={() => toggleSection('web-pill')}
-            >
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  value={openingStatus.openLabel}
-                  onChange={(e) => setOpeningStatus((prev) => ({ ...prev, openLabel: e.target.value }))}
-                  placeholder="Text při otevření"
-                  className="w-full rounded-2xl border border-navy/10 bg-cream px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                />
-                <input
-                  type="text"
-                  value={openingStatus.closedLabel}
-                  onChange={(e) => setOpeningStatus((prev) => ({ ...prev, closedLabel: e.target.value }))}
-                  placeholder="Text při zavření"
-                  className="w-full rounded-2xl border border-navy/10 bg-cream px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                />
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <input
-                    type="text"
-                    value={openingStatus.opensTodayLabel}
-                    onChange={(e) => setOpeningStatus((prev) => ({ ...prev, opensTodayLabel: e.target.value }))}
-                    placeholder="Před dnešním časem"
-                    className="w-full rounded-2xl border border-navy/10 bg-cream px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                  />
-                  <input
-                    type="text"
-                    value={openingStatus.opensAnotherDayLabel}
-                    onChange={(e) =>
-                      setOpeningStatus((prev) => ({ ...prev, opensAnotherDayLabel: e.target.value }))
-                    }
-                    placeholder="Před dalším dnem"
-                    className="w-full rounded-2xl border border-navy/10 bg-cream px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                  />
-                </div>
-                <input
-                  type="text"
-                  value={openingStatus.untilLabel}
-                  onChange={(e) => setOpeningStatus((prev) => ({ ...prev, untilLabel: e.target.value }))}
-                  placeholder="Text před koncem otevírací doby"
-                  className="w-full rounded-2xl border border-navy/10 bg-cream px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                />
-                <button
-                  type="button"
-                  disabled={loading}
-                  onClick={saveOpeningStatus}
-                  className="w-full rounded-2xl bg-gold py-3 text-sm font-semibold text-navy transition hover:bg-gold-light disabled:opacity-50"
-                >
-                  Uložit texty pilulky
-                </button>
-              </div>
-            </KitchenAccordion>
-
             <KitchenAccordion
               title="Horní info lišta"
               subtitle={siteAnnouncement.enabled ? siteAnnouncement.message || 'Zapnuto' : 'Vypnuto'}
@@ -1084,335 +788,91 @@ export default function KitchenDashboard() {
             </KitchenAccordion>
 
             <KitchenAccordion
-              title="Domů"
-              subtitle={websiteContent.home.heroTitle}
-              open={openSections['web-home']}
-              onToggle={() => toggleSection('web-home')}
+              title="Stavová pilulka"
+              subtitle={openingModeLabels[openingStatus.mode ?? 'auto']}
+              open={openSections['web-pill']}
+              onToggle={() => toggleSection('web-pill')}
             >
               <div className="space-y-3">
-                    <input
-                      type="text"
-                      value={websiteContent.home.heroEyebrow}
-                      onChange={(e) =>
-                        setWebsiteContent((prev) => ({
-                          ...prev,
-                          home: { ...prev.home, heroEyebrow: e.target.value },
-                        }))
-                      }
-                      placeholder="Eyebrow"
-                      className="w-full rounded-2xl border border-navy/10 bg-white px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                    />
-                    <input
-                      type="text"
-                      value={websiteContent.home.heroTitle}
-                      onChange={(e) =>
-                        setWebsiteContent((prev) => ({
-                          ...prev,
-                          home: { ...prev.home, heroTitle: e.target.value },
-                        }))
-                      }
-                      placeholder="Hlavní nadpis"
-                      className="w-full rounded-2xl border border-navy/10 bg-white px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                    />
-                    <textarea
-                      rows={2}
-                      value={websiteContent.home.heroDescription}
-                      onChange={(e) =>
-                        setWebsiteContent((prev) => ({
-                          ...prev,
-                          home: { ...prev.home, heroDescription: e.target.value },
-                        }))
-                      }
-                      placeholder="Popis"
-                      className="w-full rounded-2xl border border-navy/10 bg-white px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                    />
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <input
-                        type="text"
-                        value={websiteContent.home.heroPrimaryCta}
-                        onChange={(e) =>
-                          setWebsiteContent((prev) => ({
-                            ...prev,
-                            home: { ...prev.home, heroPrimaryCta: e.target.value },
-                          }))
-                        }
-                        placeholder="Primární tlačítko"
-                        className="w-full rounded-2xl border border-navy/10 bg-white px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                      />
-                      <input
-                        type="text"
-                        value={websiteContent.home.heroSecondaryCta}
-                        onChange={(e) =>
-                          setWebsiteContent((prev) => ({
-                            ...prev,
-                            home: { ...prev.home, heroSecondaryCta: e.target.value },
-                          }))
-                        }
-                        placeholder="Sekundární tlačítko"
-                        className="w-full rounded-2xl border border-navy/10 bg-white px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                      />
-                    </div>
-                    <input
-                      type="text"
-                      value={websiteContent.home.introEyebrow}
-                      onChange={(e) =>
-                        setWebsiteContent((prev) => ({
-                          ...prev,
-                          home: { ...prev.home, introEyebrow: e.target.value },
-                        }))
-                      }
-                      placeholder="Sekce pod hero"
-                      className="w-full rounded-2xl border border-navy/10 bg-white px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                    />
-                    <input
-                      type="text"
-                      value={websiteContent.home.introTitle}
-                      onChange={(e) =>
-                        setWebsiteContent((prev) => ({
-                          ...prev,
-                          home: { ...prev.home, introTitle: e.target.value },
-                        }))
-                      }
-                      placeholder="Nadpis sekce"
-                      className="w-full rounded-2xl border border-navy/10 bg-white px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                    />
-                    <textarea
-                      rows={3}
-                      value={websiteContent.home.introDescription}
-                      onChange={(e) =>
-                        setWebsiteContent((prev) => ({
-                          ...prev,
-                          home: { ...prev.home, introDescription: e.target.value },
-                        }))
-                      }
-                      placeholder="Popis sekce"
-                      className="w-full rounded-2xl border border-navy/10 bg-white px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                    />
+                <div className="rounded-2xl bg-navy px-4 py-4">
+                  <p className="mb-3 text-xs font-medium uppercase tracking-wider text-ivory/45">Náhled na webu</p>
+                  <OpeningStatusPill
+                    variant="onDark"
+                    showPhone={false}
+                    settings={openingStatus}
+                    initialStatus={getOpeningStatus(new Date(), openingStatus)}
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['auto', 'open', 'closed'] as const).map((mode) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      disabled={loading}
+                      onClick={() => setOpeningStatus((prev) => ({ ...prev, mode }))}
+                      className={`rounded-2xl px-2 py-3 text-xs font-semibold transition sm:text-sm ${
+                        (openingStatus.mode ?? 'auto') === mode
+                          ? mode === 'open'
+                            ? 'bg-forest text-ivory'
+                            : mode === 'closed'
+                              ? 'bg-terracotta text-ivory'
+                              : 'bg-navy text-ivory'
+                          : 'border border-navy/10 bg-cream text-navy'
+                      }`}
+                    >
+                      {mode === 'auto' ? 'Auto' : mode === 'open' ? 'Otevřeno' : 'Zavřeno'}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  type="text"
+                  value={openingStatus.openLabel}
+                  onChange={(e) => setOpeningStatus((prev) => ({ ...prev, openLabel: e.target.value }))}
+                  placeholder="Text při otevření"
+                  className="w-full rounded-2xl border border-navy/10 bg-cream px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
+                />
+                <input
+                  type="text"
+                  value={openingStatus.closedLabel}
+                  onChange={(e) => setOpeningStatus((prev) => ({ ...prev, closedLabel: e.target.value }))}
+                  placeholder="Text při zavření"
+                  className="w-full rounded-2xl border border-navy/10 bg-cream px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
+                />
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <input
+                    type="text"
+                    value={openingStatus.opensTodayLabel}
+                    onChange={(e) => setOpeningStatus((prev) => ({ ...prev, opensTodayLabel: e.target.value }))}
+                    placeholder="Před dnešním časem"
+                    className="w-full rounded-2xl border border-navy/10 bg-cream px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
+                  />
+                  <input
+                    type="text"
+                    value={openingStatus.opensAnotherDayLabel}
+                    onChange={(e) =>
+                      setOpeningStatus((prev) => ({ ...prev, opensAnotherDayLabel: e.target.value }))
+                    }
+                    placeholder="Před dalším dnem"
+                    className="w-full rounded-2xl border border-navy/10 bg-cream px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={openingStatus.untilLabel}
+                  onChange={(e) => setOpeningStatus((prev) => ({ ...prev, untilLabel: e.target.value }))}
+                  placeholder="Text před koncem otevírací doby"
+                  className="w-full rounded-2xl border border-navy/10 bg-cream px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
+                />
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={saveOpeningStatus}
+                  className="w-full rounded-2xl bg-gold py-3 text-sm font-semibold text-navy transition hover:bg-gold-light disabled:opacity-50"
+                >
+                  Uložit stavovou pilulku
+                </button>
               </div>
             </KitchenAccordion>
-
-            <KitchenAccordion
-              title="Pizza"
-              subtitle={websiteContent.pizza.heroTitle}
-              open={openSections['web-pizza-page']}
-              onToggle={() => toggleSection('web-pizza-page')}
-            >
-              <div className="space-y-3">
-                    <input
-                      type="text"
-                      value={websiteContent.pizza.heroEyebrow}
-                      onChange={(e) =>
-                        setWebsiteContent((prev) => ({
-                          ...prev,
-                          pizza: { ...prev.pizza, heroEyebrow: e.target.value },
-                        }))
-                      }
-                      placeholder="Eyebrow"
-                      className="w-full rounded-2xl border border-navy/10 bg-white px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                    />
-                    <input
-                      type="text"
-                      value={websiteContent.pizza.heroTitle}
-                      onChange={(e) =>
-                        setWebsiteContent((prev) => ({
-                          ...prev,
-                          pizza: { ...prev.pizza, heroTitle: e.target.value },
-                        }))
-                      }
-                      placeholder="Nadpis"
-                      className="w-full rounded-2xl border border-navy/10 bg-white px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                    />
-                    <textarea
-                      rows={2}
-                      value={websiteContent.pizza.heroDescription}
-                      onChange={(e) =>
-                        setWebsiteContent((prev) => ({
-                          ...prev,
-                          pizza: { ...prev.pizza, heroDescription: e.target.value },
-                        }))
-                      }
-                      placeholder="Popis"
-                      className="w-full rounded-2xl border border-navy/10 bg-white px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                    />
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <input
-                        type="text"
-                        value={websiteContent.pizza.orderCta}
-                        onChange={(e) =>
-                          setWebsiteContent((prev) => ({
-                            ...prev,
-                            pizza: { ...prev.pizza, orderCta: e.target.value },
-                          }))
-                        }
-                        placeholder="CTA objednávka"
-                        className="w-full rounded-2xl border border-navy/10 bg-white px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                      />
-                      <input
-                        type="text"
-                        value={websiteContent.pizza.contactCta}
-                        onChange={(e) =>
-                          setWebsiteContent((prev) => ({
-                            ...prev,
-                            pizza: { ...prev.pizza, contactCta: e.target.value },
-                          }))
-                        }
-                        placeholder="CTA kontakt"
-                        className="w-full rounded-2xl border border-navy/10 bg-white px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                      />
-                    </div>
-              </div>
-            </KitchenAccordion>
-
-            <KitchenAccordion
-              title="Catering"
-              subtitle={websiteContent.catering.heroTitle}
-              open={openSections['web-catering']}
-              onToggle={() => toggleSection('web-catering')}
-            >
-              <div className="space-y-3">
-                    <input
-                      type="text"
-                      value={websiteContent.catering.heroEyebrow}
-                      onChange={(e) =>
-                        setWebsiteContent((prev) => ({
-                          ...prev,
-                          catering: { ...prev.catering, heroEyebrow: e.target.value },
-                        }))
-                      }
-                      placeholder="Eyebrow"
-                      className="w-full rounded-2xl border border-navy/10 bg-white px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                    />
-                    <input
-                      type="text"
-                      value={websiteContent.catering.heroTitle}
-                      onChange={(e) =>
-                        setWebsiteContent((prev) => ({
-                          ...prev,
-                          catering: { ...prev.catering, heroTitle: e.target.value },
-                        }))
-                      }
-                      placeholder="Nadpis"
-                      className="w-full rounded-2xl border border-navy/10 bg-white px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                    />
-                    <textarea
-                      rows={2}
-                      value={websiteContent.catering.heroDescription}
-                      onChange={(e) =>
-                        setWebsiteContent((prev) => ({
-                          ...prev,
-                          catering: { ...prev.catering, heroDescription: e.target.value },
-                        }))
-                      }
-                      placeholder="Popis"
-                      className="w-full rounded-2xl border border-navy/10 bg-white px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                    />
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <input
-                        type="text"
-                        value={websiteContent.catering.inquiryEyebrow}
-                        onChange={(e) =>
-                          setWebsiteContent((prev) => ({
-                            ...prev,
-                            catering: { ...prev.catering, inquiryEyebrow: e.target.value },
-                          }))
-                        }
-                        placeholder="Eyebrow formuláře"
-                        className="w-full rounded-2xl border border-navy/10 bg-white px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                      />
-                      <input
-                        type="text"
-                        value={websiteContent.catering.inquiryTitle}
-                        onChange={(e) =>
-                          setWebsiteContent((prev) => ({
-                            ...prev,
-                            catering: { ...prev.catering, inquiryTitle: e.target.value },
-                          }))
-                        }
-                        placeholder="Nadpis formuláře"
-                        className="w-full rounded-2xl border border-navy/10 bg-white px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                      />
-                    </div>
-                    <textarea
-                      rows={2}
-                      value={websiteContent.catering.inquiryDescription}
-                      onChange={(e) =>
-                        setWebsiteContent((prev) => ({
-                          ...prev,
-                          catering: { ...prev.catering, inquiryDescription: e.target.value },
-                        }))
-                      }
-                      placeholder="Popis formuláře"
-                      className="w-full rounded-2xl border border-navy/10 bg-white px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                    />
-              </div>
-            </KitchenAccordion>
-
-            <KitchenAccordion
-              title="Kontakt"
-              subtitle={websiteContent.kontakt.heroTitle}
-              open={openSections['web-kontakt']}
-              onToggle={() => toggleSection('web-kontakt')}
-            >
-              <div className="space-y-3">
-                    <input
-                      type="text"
-                      value={websiteContent.kontakt.heroEyebrow}
-                      onChange={(e) =>
-                        setWebsiteContent((prev) => ({
-                          ...prev,
-                          kontakt: { ...prev.kontakt, heroEyebrow: e.target.value },
-                        }))
-                      }
-                      placeholder="Eyebrow"
-                      className="w-full rounded-2xl border border-navy/10 bg-white px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                    />
-                    <input
-                      type="text"
-                      value={websiteContent.kontakt.heroTitle}
-                      onChange={(e) =>
-                        setWebsiteContent((prev) => ({
-                          ...prev,
-                          kontakt: { ...prev.kontakt, heroTitle: e.target.value },
-                        }))
-                      }
-                      placeholder="Nadpis"
-                      className="w-full rounded-2xl border border-navy/10 bg-white px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                    />
-                    <textarea
-                      rows={2}
-                      value={websiteContent.kontakt.heroDescription}
-                      onChange={(e) =>
-                        setWebsiteContent((prev) => ({
-                          ...prev,
-                          kontakt: { ...prev.kontakt, heroDescription: e.target.value },
-                        }))
-                      }
-                      placeholder="Popis"
-                      className="w-full rounded-2xl border border-navy/10 bg-white px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                    />
-                    <input
-                      type="text"
-                      value={websiteContent.kontakt.formEyebrow}
-                      onChange={(e) =>
-                        setWebsiteContent((prev) => ({
-                          ...prev,
-                          kontakt: { ...prev.kontakt, formEyebrow: e.target.value },
-                        }))
-                      }
-                      placeholder="Text nad kontaktním formulářem"
-                      className="w-full rounded-2xl border border-navy/10 bg-white px-4 py-3 text-sm text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                    />
-              </div>
-            </KitchenAccordion>
-
-            <button
-              type="button"
-              disabled={loading}
-              onClick={saveWebsiteContent}
-              className="w-full rounded-2xl bg-gold py-3 text-sm font-semibold text-navy transition hover:bg-gold-light disabled:opacity-50"
-            >
-              Uložit web texty
-            </button>
           </div>
         )}
       </main>

@@ -44,6 +44,7 @@ function defaultOrderPage(): OrderPageSettings {
 
 function defaultOpeningStatus(): OpeningStatusSettings {
   return {
+    mode: 'auto',
     openLabel: 'Nyní máme otevřeno',
     closedLabel: 'Nyní máme zavřeno',
     opensTodayLabel: 'Otevíráme v',

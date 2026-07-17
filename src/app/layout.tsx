@@ -33,8 +33,11 @@ export const metadata: Metadata = {
   title: 'Rodinná restaurace v Žeravicích | Na Formance Žeravice',
   description: site.description,
   icons: {
-    icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
-    apple: [{ url: '/icon.svg', type: 'image/svg+xml' }],
+    icon: [
+      { url: '/icon.png', type: 'image/png', sizes: '32x32' },
+      { url: '/logo.jpg', type: 'image/jpeg', sizes: '984x984' },
+    ],
+    apple: [{ url: '/apple-icon.png', type: 'image/png', sizes: '180x180' }],
   },
   openGraph: {
     type: 'website',
@@ -72,7 +75,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <ConditionalSiteChrome
           announcement={<SiteAnnouncementBar announcement={store.siteAnnouncement} />}
           navbar={<Navbar />}
-          footer={<Footer />}
+          footer={<Footer openingStatusSettings={store.openingStatus} />}
         >
           {children}
         </ConditionalSiteChrome>
