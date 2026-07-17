@@ -25,7 +25,7 @@ export default function MenuPage() {
       </PageHero>
 
       <section className="px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-5xl">
           <DrinkMenuTabs />
         </div>
       </section>

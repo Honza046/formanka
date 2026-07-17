@@ -23,7 +23,7 @@ function Stars({
   const iconClass = size === 'md' ? 'h-4 w-4' : 'h-3.5 w-3.5';
 
   return (
-    <div className={`inline-flex items-center justify-center gap-0.5 ${className}`} aria-hidden>
+    <span className={`inline-flex items-center justify-center gap-0.5 ${className}`} aria-hidden>
       {Array.from({ length: 5 }, (_, starIndex) => {
         const filled = starIndex + 1 <= Math.round(rating);
 
@@ -35,7 +35,7 @@ function Stars({
           />
         );
       })}
-    </div>
+    </span>
   );
 }
 
@@ -46,11 +46,8 @@ function ReviewCard({ review }: { review: (typeof googleReviewItems)[number] }) 
         „{review.text}"
       </p>
       <p className="mt-6 text-sm font-semibold text-navy">{review.author}</p>
-      <p className="mt-1 inline-flex items-center justify-center gap-2 text-xs text-navy/40">
-        <Stars rating={review.rating} />
-        <span>
-          {review.relativeDate} · Google
-        </span>
+      <p className="mt-1 text-xs text-navy/40">
+        {review.relativeDate} · Google
       </p>
     </article>
   );

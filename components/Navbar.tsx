@@ -49,17 +49,17 @@ export default function Navbar() {
           </Link>
         </div>
 
-        <div className="flex items-center gap-3 lg:hidden">
+        <div className="flex items-center gap-2.5 lg:hidden">
           <Link
             href="/pizza/objednat"
-            className="inline-flex rounded-2xl bg-gold px-4 py-2 text-xs font-semibold text-navy sm:text-sm"
+            className="inline-flex h-10 items-center rounded-2xl bg-gold px-4 text-xs font-semibold text-navy sm:text-sm"
           >
             Objednat
           </Link>
           <button
             type="button"
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-navy/10 text-navy"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-navy/10 text-navy"
             aria-label={mobileOpen ? 'Zavřít menu' : 'Otevřít menu'}
             aria-expanded={mobileOpen}
           >

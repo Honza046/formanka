@@ -43,17 +43,17 @@ export default function HomePizzaTeaser() {
                 ))}
               </ul>
 
-              <div className="mt-6 flex flex-wrap gap-3">
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link
                   href="/pizza/objednat"
-                  className="inline-flex items-center gap-2 rounded-full bg-gold px-5 py-2.5 text-sm font-semibold text-navy transition hover:bg-gold-light"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-gold px-5 py-2.5 text-sm font-semibold text-navy transition hover:bg-gold-light sm:w-auto"
                 >
                   Objednat online
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
                   href="/pizza"
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-navy ring-1 ring-navy/10 transition hover:ring-gold/40"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-navy ring-1 ring-navy/10 transition hover:ring-gold/40 sm:w-auto"
                 >
                   Celá nabídka
                 </Link>

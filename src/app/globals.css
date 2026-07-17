@@ -106,11 +106,11 @@ body::before {
   -webkit-mask-image: linear-gradient(
     to right,
     transparent 0%,
-    black 4%,
-    black 96%,
+    black 6%,
+    black 94%,
     transparent 100%
   );
-  mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%);
 }
 
 .gallery-carousel-static {
@@ -122,6 +122,20 @@ body::before {
     transparent 100%
   );
   mask-image: linear-gradient(to right, transparent 0%, black 3%, black 97%, transparent 100%);
+}
+
+@media (max-width: 639px) {
+  .gallery-carousel,
+  .gallery-carousel-static {
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 2%,
+      black 98%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(to right, transparent 0%, black 2%, black 98%, transparent 100%);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

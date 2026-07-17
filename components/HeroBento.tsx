@@ -12,7 +12,7 @@ import { pizzaInfo, services, site } from '@/lib/data';
 
 const cardBase = `flex flex-col ${HOME_SURFACE_RADIUS} p-6 shadow-sm transition-shadow hover:shadow-md lg:p-7`;
 const cardLink = `group ${cardBase} justify-between`;
-const homeServices = services.slice(0, 4);
+const homeServices = services.slice(0, 6);
 
 type HeroBentoProps = {
   eyebrow: string;
@@ -32,19 +32,26 @@ export default function HeroBento({ eyebrow, title, description }: HeroBentoProp
 
         <div className="flex flex-col gap-5">
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 lg:items-stretch">
-            <article className={`${cardBase} border border-navy/5 bg-white md:col-span-2 lg:col-span-1`}>
-              <div className="mb-6 flex items-center gap-3">
-                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-navy/5 text-navy">
-                  <UtensilsCrossed className="h-5 w-5" />
-                </span>
-                <div>
-                  <h2 className="font-serif text-2xl font-bold text-navy">Vítejte u nás!</h2>
-                  <p className="text-sm text-navy/50">{site.address.note}</p>
+            <article
+              className={`${cardBase} justify-between border border-navy/5 bg-white md:col-span-2 lg:col-span-1`}
+            >
+              <div>
+                <div className="mb-5 flex items-center gap-3">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-navy/5 text-navy">
+                    <UtensilsCrossed className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <h2 className="font-serif text-2xl font-bold text-navy">Vítejte u nás!</h2>
+                    <p className="text-sm text-navy/50">{site.address.note}</p>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex-1">
-                <ul className="grid gap-2 sm:grid-cols-2">
+                <p className="text-sm leading-relaxed text-navy/65">
+                  Kompletní servis včetně rautů a cateringu na míru. Rádi připravíme oslavu, svatbu
+                  i firemní večírek.
+                </p>
+
+                <ul className="mt-5 grid gap-2 sm:grid-cols-2">
                   {homeServices.map((service) => (
                     <li
                       key={service}
@@ -55,15 +62,15 @@ export default function HeroBento({ eyebrow, title, description }: HeroBentoProp
                     </li>
                   ))}
                 </ul>
-
-                <Link
-                  href="/catering"
-                  className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-navy transition hover:gap-3 hover:text-gold"
-                >
-                  Všechny služby
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
               </div>
+
+              <Link
+                href="/catering"
+                className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-navy transition hover:gap-3 hover:text-gold"
+              >
+                Všechny služby
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             </article>
 
             <Link
