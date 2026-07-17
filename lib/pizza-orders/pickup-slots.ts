@@ -3,6 +3,8 @@ import { getPragueClock, isPizzaDayInPrague, pragueWallTimeToDate } from '@/lib/
 const START_HOUR = 17;
 const END_HOUR = 22;
 const SLOT_MINUTES = 15;
+/** Nejdřívější vyzvednutí — vždy aspoň tolik minut od teď, pak zaokrouhlení na slot. */
+const LEAD_MINUTES = 20;
 
 export function startHourLabel(): string {
   return `${String(START_HOUR).padStart(2, '0')}:00`;
@@ -14,7 +16,7 @@ function roundUpMinutes(totalMinutes: number): number {
   return totalMinutes + (SLOT_MINUTES - remainder);
 }
 
-/** Generuje sloty 17:00–22:00 po 15 min v Europe/Prague; minulé časy se neukazují. */
+/** Generuje sloty 17:00–22:00 po 15 min v Europe/Prague; nejdřívější cca +20 min. */
 export function getPickupSlots(now = new Date()): { value: string; label: string }[] {
   if (!isPizzaDay(now) && !isDevOrdersOpen()) {
     return [];
@@ -28,7 +30,10 @@ export function getPickupSlots(now = new Date()): { value: string; label: string
     return [];
   }
 
-  let cursorMinutes = clock.nowMinutes > startMinutes ? roundUpMinutes(clock.nowMinutes) : startMinutes;
+  const earliestWithLead = clock.nowMinutes + LEAD_MINUTES;
+  let cursorMinutes =
+    earliestWithLead > startMinutes ? roundUpMinutes(earliestWithLead) : startMinutes;
+
   if (cursorMinutes > endMinutes) {
     return [];
   }
